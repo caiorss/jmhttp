@@ -129,6 +129,10 @@ case class HttpRequest(
     this.sendTextResponse(text, 404, "NOT FOUND", headers)
   }
 
+  def sendRedirect(url: String) =
+    this.sendTextResponse("", 302, "MOVED PERMANENTLY", Map("Location" -> url))
+
+
   def sendFileResponse(
     file:     String,
     mimeType: String      = "application/octet-stream",

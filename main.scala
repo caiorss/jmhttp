@@ -50,6 +50,42 @@ case class HttpRequest(
     this.sendTextResponse(text, 404, "NOT FOUND", headers)
   }
 
+  def sendFileResponse(
+    file:     String,
+    mimeType: String      = "application/octet-stream",
+    headers:  HttpHeaders = Map[String, String]()
+  ) = {
+
+    def copyStream(from: java.io.InputStream, to: java.io.OutputStream){
+      // number of bytes read
+      var n = 0
+      // Buffer with 1024 bytes or 1MB
+      val buf = new Array[Byte](1024)
+      while( {n = from.read(buf) ; n} > 0 ){
+        to.write(buf, 0, n)
+      }
+    }
+
+    try {
+      val inp = new java.io.FileInputStream(file)
+      val crlf = "\r\n"
+      val out = new java.io.DataOutputStream(outStream)
+      out.writeBytes(s"${httpVersion} 200 OK" + crlf)
+      out.writeBytes("Content-Type: " + mimeType + crlf)
+      headers foreach { case (k, v) =>
+        out.writeBytes(s"${k}: ${v}" + crlf)
+      }
+      out.writeBytes(crlf)
+      copyStream(inp, out)
+      inp.close()
+      out.close()
+    } catch {
+      case ex: java.io.FileNotFoundException
+          => this.send404Response("Error: file not found in the server.")
+    }
+  }
+
+
 
 } //----  Eof case class HttpRequest ----- //
 

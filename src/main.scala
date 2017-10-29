@@ -11,18 +11,24 @@ object Main{
     txt
   }
 
-
   def main(args: Array[String]){
 
-    val server = new HttpServer(port = 8080, verbose = true)
+    val server = new HttpServer(port = 8080, verbose = true)    
 
-    println(args)
+    val urlPaths = for {
+      a <- args
+      Array(url, path) = a.split(":")
+    } yield ("/" + url, path)
 
-    for (a <- args) a.split(":") match {
-      case Array(url, path) => server.addRouteDirContents("/" + url, path)
-    }
+    println(urlPaths)
+     
+    server.addRouteDirsIndex(urlPaths)
 
-    server.runSync()
+    // for (a <- args) a.split(":") match {
+    //   case Array(url, path) => server.addRouteDirContents("/" + url, path)
+    // }
+
+    server.run()
   }
 }
 

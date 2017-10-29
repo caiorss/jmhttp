@@ -176,6 +176,22 @@ class HttpServer(port: Int, verbose: Boolean = false){
     }
   }
 
+
+  def addRouteDirsIndex(urlPaths: Seq[(String, String)]) = {
+    val indexPage = urlPaths.foldLeft(""){ (acc, tpl) =>
+      val (dirUrl, dirPath) = tpl
+      acc + "\n" + s"Directory: <a href='${dirUrl}'>${dirUrl}</a></br></br>"
+    }
+
+    this.addRoutePathGET("/"){
+      _.sendTextResponse(indexPage, headers = Map("Content-Type" -> "text/html"))
+    }
+
+    urlPaths foreach { case (dirUrl, dirPath) =>
+      this.addRouteDirContents(dirUrl, dirPath)
+    }
+  }
+
   def addRouteRedirect(pred: String => Boolean, url: String) = {
     val rule = HttpRoute(
       matcher = (req: HttpRequest) => pred(req.path),
@@ -248,11 +264,13 @@ class HttpServer(port: Int, verbose: Boolean = false){
   }
 
   /** Run server in async way with threading. */
-  def run() = while (true)  {
+  def run() = while (true) try {
     if (verbose) println("Server: waiting for client connection.")
     val req    = this.getRequest()
     if (verbose) println("Server: client has connected")
     Utils.withThread{ this.serveRequest(req)}
+  } catch {
+    case ex: Throwable => ex.printStackTrace()
   }
 
 

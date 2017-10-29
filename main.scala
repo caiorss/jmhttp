@@ -1,6 +1,48 @@
 
 import java.net.{ServerSocket}
 
+
+
+object Utils{
+
+  def encodeURL(url: String) =
+    java.net.URLEncoder.encode(url, "UTF-8")
+
+  val mimeTypes = Map(
+
+    //---- Common text files //
+    "css"  -> "text/css",
+    "html" -> "text/html",
+    "js"   -> "application/x-javascript",
+    "txt"  -> "text/plain",
+    "sh"   -> "application/x-sh",
+
+    // -- Images -------- //
+    "gif"  -> "image/gif",
+    "ico"  -> "image/x-icon",
+    "jfif" -> "image/jpeg",
+    "jpg"  -> "image/jpeg",
+    "jpeg" -> "image/jpeg",
+    "jpeg" -> "image/jpeg",
+    "png"  -> "image/png",
+    "qti"  -> "image/x-quicktime",
+    "tif"  -> "image/tiff",
+    "tiff" -> "image/tiff",
+
+    //--- Audio -----------//
+    "mp3"  -> "audio/mpeg",
+    "ogg"  -> "audio/vorbis, application/ogg",
+
+    //-- Documents  -----─//
+    "pdf"  -> "application/pdf",
+    "ptt"  -> "application/mspowerpoint"
+  )
+
+
+}
+
+
+
 val httpVersion = "HTTP/1.0"
 
 type HttpHeaders = Map[String, String]

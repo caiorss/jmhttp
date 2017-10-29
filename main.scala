@@ -26,6 +26,9 @@ object Utils{
   def encodeURL(url: String) =
     java.net.URLEncoder.encode(url, "UTF-8")
 
+  def decodeURL(url: String) =
+    java.net.URLDecoder.decode(url, "UTF-8")
+
   val mimeTypes = Map(
 
     //---- Common text files //

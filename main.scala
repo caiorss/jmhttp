@@ -45,6 +45,12 @@ case class HttpRequest(
   } // --- EoF sendTexResponse ---- //
 
 
+
+  def send404Response(text: String, headers: HttpHeaders = Map[String, String]()) = {
+    this.sendTextResponse(text, 404, "NOT FOUND", headers)
+  }
+
+
 } //----  Eof case class HttpRequest ----- //
 
 

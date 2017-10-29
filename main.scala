@@ -69,8 +69,16 @@ def getClientRequest(client: java.net.Socket, verbose: Boolean = false) = {
 } //------ End of getClientRequest() ----- //
 
 
+val port = 8080
+
+val ssock = new ServerSocket(port)
+
+println("Waiting connection")
+val client = ssock.accept()
+println("Client has connected.")
 
 
-
+val req = getClientRequest(client, true)
+req.sendEchoDebug()
 
 

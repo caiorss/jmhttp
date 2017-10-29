@@ -182,6 +182,21 @@ class HttpServer(port: Int, verbose: Boolean = false){
   }
 
 
+  /** Add Http route to serve files from a directory */
+  def addRouteDir(dirUrl: String, dirPath: String) = {
+    this.addRoutePathGET(dirUrl){ req =>
+      val index = new java.io.File(dirPath, "index.html")
+      if (index.isFile())
+        req.sendDirFileResponse(dirPath, "index.html")
+      else
+        req.sendDirListResponse(dirPath, dirUrl)
+    }
+    this.addRouteParamGET(dirUrl){ (req: HttpRequest, file: String) =>
+      req.sendDirFileResponse(dirPath, file)
+    }
+  }
+  
+
   def addRouteDirsIndex(urlPaths: Seq[(String, String)]) = {
     val indexPage = urlPaths.foldLeft(""){ (acc, tpl) =>
       val (dirUrl, dirPath) = tpl

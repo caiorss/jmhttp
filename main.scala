@@ -3,6 +3,8 @@ import java.net.{ServerSocket}
 
 val httpVersion = "HTTP/1.0"
 
+type HttpHeaders = Map[String, String]
+
 case class HttpRequest(
   method:    String,
   path:      String,

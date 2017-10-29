@@ -46,6 +46,18 @@ object Utils{
     "mp3"  -> "audio/mpeg",
     "ogg"  -> "audio/vorbis, application/ogg",
 
+    //-- Video -----------//
+    "mp4" -> "video/mp4",
+    "flv" -> "video/x-flv",
+    "3gp" -> "video/3gpp",
+    "avi" -> "video/x-msvideo",
+    "wmv" -> "video/x-ms-wmv",
+    "ogv" -> "video/ogg",
+    "webm" -> "video/webm",
+    "mov" -> "video/quicktime",
+    "movie" -> "video/x-sgi-movie",
+
+
     //-- Documents  -----─//
     "pdf"  -> "application/pdf",
     "ptt"  -> "application/mspowerpoint"

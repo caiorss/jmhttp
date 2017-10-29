@@ -7,18 +7,29 @@ case class HttpRequest(
   method:    String,
   path:      String,
   headers:   Map[String, String],
+  version:   String,
   inpStream: java.io.InputStream,
   outStream: java.io.OutputStream,
-)
+) {
 
+  /** Send response with http request parameters for debugging. */
+  def sendEchoDebug() {
+    val crlf = "\r\n"
+    val out = new java.io.DataOutputStream(req.outStream)
+    out.writeBytes(s"${httpVersion} 200 OK" + crlf)
+    out.writeBytes(crlf)
+    out.writeBytes("Method =  " + method  + crlf)
+    out.writeBytes("Path   =  " + path    + crlf)
+    out.writeBytes(crlf)
+    out.writeBytes("headers = " + crlf)
 
+    headers foreach { case (k, v) =>
+      out.writeBytes(s"${k}\t=\t${v}" + crlf)
+    }
 
-val port = 8080
-
-val ssock = new ServerSocket(port)
-
-val client = ssock.accept()
-println("Client has connected.")
+    out.close()
+  }
+}
 
 
 def getClientRequest(client: java.net.Socket) = {

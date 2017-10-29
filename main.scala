@@ -5,6 +5,19 @@ import java.net.{ServerSocket}
 
 object Utils{
 
+    def getAllFiles(path: String) : Array[java.nio.file.Path] = {
+      import java.nio.file.{Files, Paths, Path}
+
+      val root = Paths.get(path)
+
+      Files.walk(root)
+        .filter(_.toFile.isFile)
+        .toArray
+        .map(p => root relativize p.asInstanceOf[java.nio.file.Path])
+    }
+
+
+
   def encodeURL(url: String) =
     java.net.URLEncoder.encode(url, "UTF-8")
 

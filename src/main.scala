@@ -1,5 +1,7 @@
 package jmhttp.main
 
+import jmhttp.server.HttpServer 
+
 object Main{
 
   def readFile(file: String) = {

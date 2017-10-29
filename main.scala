@@ -30,6 +30,22 @@ case class HttpRequest(
     out.close()
   }
 
+  def sendTextResponse(text: String, status: Int = 200, statusMsg: String = "Ok", headers: HttpHeaders = Map[String, String]()) = {
+    val crlf = "\r\n"
+    val out = new java.io.DataOutputStream(outStream)
+    out.writeBytes(s"${httpVersion} ${status} ${statusMsg}" + crlf)
+    headers foreach { case (k, v) =>
+      out.writeBytes(s"${k}: ${v}" + crlf)
+    }
+    out.writeBytes(crlf)
+    text.lines.foreach{ lin =>
+      out.writeBytes(lin + crlf)
+    }
+    out.close()
+  } // --- EoF sendTexResponse ---- //
+
+
+} //----  Eof case class HttpRequest ----- //
 
 
 def getClientRequest(client: java.net.Socket, verbose: Boolean = false) = {

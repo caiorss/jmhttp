@@ -1,8 +1,6 @@
 
 import java.net.{ServerSocket}
 
-
-
 object Utils{
 
     def getAllFiles(path: String) : Array[java.nio.file.Path] = {
@@ -80,8 +78,6 @@ object Utils{
 }
 
 
-type HttpHeaders = Map[String, String]
-
 case class HttpRequest(
   method:    String,
   path:      String,
@@ -93,6 +89,7 @@ case class HttpRequest(
 
   val httpVersion = "HTTP/1.0"
 
+  type HttpHeaders = Map[String, String]
 
   /** Send response with http request parameters for debugging. */
   def sendDebugResponse() {

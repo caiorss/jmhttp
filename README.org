@@ -1,0 +1,5 @@
+* SxhttpServer 
+
+Objective: Make a small and simple http server in Scala to share files
+in the local network. 
+

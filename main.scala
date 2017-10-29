@@ -15,23 +15,21 @@ case class HttpRequest(
 ) {
 
   /** Send response with http request parameters for debugging. */
-  def sendEchoDebug() {
+  def sendDebugResponse() {
     val crlf = "\r\n"
-    val out = new java.io.DataOutputStream(req.outStream)
+    val out = new java.io.DataOutputStream(outStream)
     out.writeBytes(s"${httpVersion} 200 OK" + crlf)
     out.writeBytes(crlf)
     out.writeBytes("Method =  " + method  + crlf)
     out.writeBytes("Path   =  " + path    + crlf)
     out.writeBytes(crlf)
     out.writeBytes("headers = " + crlf)
-
     headers foreach { case (k, v) =>
       out.writeBytes(s"${k}\t=\t${v}" + crlf)
     }
-
     out.close()
   }
-}
+
 
 
 def getClientRequest(client: java.net.Socket, verbose: Boolean = false) = {

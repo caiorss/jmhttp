@@ -334,21 +334,3 @@ class HttpServer(port: Int, verbose: Boolean = false){
 
 } // ----- Eof class HttpServer ----
 
-
-val server = new HttpServer(port = 8080, verbose = true)
-
-
-
-val port = 8080
-
-val ssock = new ServerSocket(port)
-
-println("Waiting connection")
-val client = ssock.accept()
-println("Client has connected.")
-
-
-val req = getClientRequest(client, true)
-req.sendEchoDebug()
-
-

@@ -80,9 +80,6 @@ object Utils{
 }
 
 
-
-val httpVersion = "HTTP/1.0"
-
 type HttpHeaders = Map[String, String]
 
 case class HttpRequest(
@@ -93,6 +90,9 @@ case class HttpRequest(
   inpStream: java.io.InputStream,
   outStream: java.io.OutputStream,
 ) {
+
+  val httpVersion = "HTTP/1.0"
+
 
   /** Send response with http request parameters for debugging. */
   def sendDebugResponse() {

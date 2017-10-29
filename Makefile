@@ -18,7 +18,7 @@ $(appjar): $(src)
 	scalac $(src) -d $(appjar)
 
 uber: $(appjar)
-	jarget uber -scala -sh -m $(appjar) -o mtthp
+	jarget uber -scala -sh -m $(appjar) -o jmtthp
 
 doc: $(src)
 	scaladoc $(src) -doc-title "Mtthp Server - Scala Micrio" -doc-version "1.0" -doc-source-url "https://github.com/caiorss/jarget" -d ./bin/docs

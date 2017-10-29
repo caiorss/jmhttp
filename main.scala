@@ -73,6 +73,4 @@ def getClientRequest(client: java.net.Socket, verbose: Boolean = false) = {
 
 
 
-scala> sc.nextLine()
-res1: String = GET /index HTTP/1.1
 

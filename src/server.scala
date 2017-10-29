@@ -160,7 +160,12 @@ class HttpServer(port: Int, verbose: Boolean = false){
 
   def addRouteParamGET(path: String)(action: (HttpRequest, String) => Unit) = {
     val rule = HttpRoute(
-      matcher = (req: HttpRequest) => req.method == "GET" && req.path.startsWith(path + "/"),
+      matcher = (req: HttpRequest) => {
+        if (path == "/")
+          req.method == "GET" &&  req.path.startsWith("/")
+        else
+          req.method == "GET" &&  req.path.startsWith(path + "/")
+      },
       action  = (req: HttpRequest) => action(req, req.path.stripPrefix(path + "/"))
     )
     this.addRoute(rule)

@@ -218,49 +218,117 @@ case class HttpRoute(
   val action:  HttpRequest => Unit
 )
 
+class HttpServer(port: Int, verbose: Boolean = false){
+  import scala.collection.mutable.ListBuffer
+
+  private val ssock  = new ServerSocket(port)
+  private val routes = ListBuffer[HttpRoute]()
 
 
-def getClientRequest(client: java.net.Socket, verbose: Boolean = false) = {
-  def getHeaders(sc: java.util.Scanner) = {
-    var headers = Map[String, String]()
+  def addRoute(route: HttpRoute) =
+    routes.append(route)
 
-    var line: String = ""
-    while({line = sc.nextLine(); line} != ""){
+  def addRoutePathGET(path: String)(action: HttpRequest => Unit) =
+    routes.append(HttpRoute(
+      matcher = (req: HttpRequest) => req.method == "GET" && req.path == path,
+      action  = action
+    ))
 
-      if (verbose) println("Htp header = " + line)
-
-      line.split(":\\s+", 2) match {
-        case Array(key, value)
-            => headers += key.stripSuffix(":") -> value
-        case Array("")
-            => ()
-        case _
-            => throw new IllegalArgumentException("Error: invalid http header")
-      }
-    }
-    headers
+  def addRouteParamGET(path: String)(action: (HttpRequest, String) => Unit) = {
+    val rule = HttpRoute(
+      matcher = (req: HttpRequest) => req.method == "GET" && req.path.startsWith(path + "/"),
+      action  = (req: HttpRequest) => action(req, req.path.stripPrefix(path + "/"))
+    )
+    this.addRoute(rule)
   }
 
-  val sc = new java.util.Scanner(client.getInputStream())
 
-  if (!sc.hasNextLine())
-    throw new IllegalArgumentException("Error: empty http request line.")
+  def addRouteDirContents(dirUrl: String, dirPath: String) = {
+    this.addRoutePathGET(dirUrl){
+      _.sendDirListTransvResponse(dirPath, dirUrl)
+    }
+    this.addRouteParamGET(dirUrl){ (req: HttpRequest, file: String) =>
+      req.sendDirFileResponse(dirPath, file)
+    }
+  }
 
-  val reqline = sc.nextLine()
-  if (verbose) println("Request line = " + reqline)
-  val Array(httpMethod, urlPath, httpVersion) = reqline.split(" ")
-  val headers = getHeaders(sc)
 
-  HttpRequest(
-    method  = httpMethod,
-    path    = urlPath,
-    headers = headers,
-    version = httpVersion,
-    inpStream = client.getInputStream(),
-    outStream = client.getOutputStream()
-  )
+  def getRequest(verbose: Boolean = false) = {
+    val client = ssock.accept()
+    def getHeaders(sc: java.util.Scanner) = {
+      var headers = Map[String, String]()
 
-} //------ End of getClientRequest() ----- //
+      var line: String = ""
+      while({line = sc.nextLine(); line} != ""){
+
+        if (verbose) println("Htp header = " + line)
+
+        line.split(":\\s+", 2) match {
+          case Array(key, value)
+              => headers += key.stripSuffix(":") -> value
+          case Array("")
+              => ()
+          case _
+              => throw new IllegalArgumentException("Error: invalid http header")
+        }
+      }
+      headers
+    }
+
+    val sc = new java.util.Scanner(client.getInputStream())
+
+    if (!sc.hasNextLine())
+      throw new IllegalArgumentException("Error: empty http request line.")
+
+    val reqline = sc.nextLine()
+    if (verbose) println("Request line = " + reqline)
+    val Array(httpMethod, urlPath, httpVersion) = reqline.split(" ")
+    val headers = getHeaders(sc)
+
+    HttpRequest(
+      method  = httpMethod,
+      path    = urlPath,
+      headers = headers,
+      version = httpVersion,
+      inpStream = client.getInputStream(),
+      outStream = client.getOutputStream()
+    )
+
+  } //------ End of getClientRequest() ----- //
+
+
+  def serveRequest(req: HttpRequest) = {
+    val rule = routes.find(r => r.matcher(req))
+    rule match {
+      case Some(r) => r.action(req)
+      case None    => req.send404Response(s"Error: resource ${req.path} not found")
+    }
+  }
+
+  // Run server in synchronous way, without threading.
+  //
+  def runSync() = while (true) try {
+    if (verbose) println("Server: waiting for client connection.")
+    val req = this.getRequest()
+    if (verbose) println("Server: client has connected")
+    this.serveRequest(req)
+  } catch {
+    case ex: Throwable => ex.printStackTrace()
+  }
+
+  def run() = while (true)  {
+    if (verbose) println("Server: waiting for client connection.")
+    val req    = this.getRequest()
+    if (verbose) println("Server: client has connected")
+    Utils.withThread{ this.serveRequest(req)}
+  }
+
+
+} // ----- Eof class HttpServer ----
+
+
+val server = new HttpServer(port = 8080, verbose = true)
+
 
 
 val port = 8080

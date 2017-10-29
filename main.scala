@@ -7,9 +7,7 @@ object Utils{
 
     def getAllFiles(path: String) : Array[java.nio.file.Path] = {
       import java.nio.file.{Files, Paths, Path}
-
       val root = Paths.get(path)
-
       Files.walk(root)
         .filter(_.toFile.isFile)
         .toArray

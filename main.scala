@@ -171,6 +171,21 @@ case class HttpRequest(
     out.close()
   }
 
+  def sendDirListTransvResponse(dirpath: String, urlPath: String) = {
+    val crlf = "\r\n"
+    val out = new java.io.DataOutputStream(outStream)
+    out.writeBytes(s"${httpVersion} 200 OK"  + crlf)
+    out.writeBytes("Content-type: text/html" + crlf)
+    out.writeBytes(crlf)
+    val files   = Utils.getAllFiles(dirpath) map(_.toString)
+    files foreach { file =>
+      out.writeBytes(s"<a href='${urlPath}/${file}'>${file}</a></br></br>" + crlf)
+    }
+    out.close()
+  }
+
+
+
 
 } //----  Eof case class HttpRequest ----- //
 

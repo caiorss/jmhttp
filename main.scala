@@ -17,6 +17,11 @@ object Utils{
     }
 
 
+  def withThread(action: => Unit) = {
+    val th = new Thread(() => action)
+    th.start()
+    th
+  }
 
   def encodeURL(url: String) =
     java.net.URLEncoder.encode(url, "UTF-8")

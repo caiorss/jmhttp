@@ -1,6 +1,7 @@
 
 import java.net.{ServerSocket}
 
+val httpVersion = "HTTP/1.0"
 
 case class HttpRequest(
   method:    String,

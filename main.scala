@@ -252,6 +252,13 @@ class HttpServer(port: Int, verbose: Boolean = false){
     }
   }
 
+  def addRouteRedirect(pred: String => Boolean, url: String) = {
+    val rule = HttpRoute(
+      matcher = (req: HttpRequest) => pred(req.path),
+      action  = (req: HttpRequest) => req.sendRedirect(url)
+    )
+    this.addRoute(rule)
+  }
 
   def getRequest(verbose: Boolean = false) = {
     val client = ssock.accept()

@@ -1,8 +1,8 @@
 
 #====== U S E R - S E T T I N G S =========;;
 
-src  := main.scala 
-app  := mhttp
+src  := $(wildcard src/*.scala)
+app  := jmhttp
 
 # ===== S E T T I N G S =====================;;
 
@@ -20,3 +20,9 @@ $(appjar): $(src)
 uber: $(appjar)
 	jarget uber -scala -sh -m $(appjar) -o mtthp
 
+doc: $(src)
+	scaladoc $(src) -doc-title "Mtthp Server - Scala Micrio" -doc-version "1.0" -doc-source-url "https://github.com/caiorss/jarget" -d ./bin/docs
+
+
+test: $(appjar)
+	scala $(appjar) images:/home/archbox/Pictures files:/home/archbox/Downloads 

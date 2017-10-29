@@ -213,6 +213,12 @@ case class HttpRequest(
 } //----  Eof case class HttpRequest ----- //
 
 
+case class HttpRoute(
+  val matcher: HttpRequest => Boolean,
+  val action:  HttpRequest => Unit
+)
+
+
 
 def getClientRequest(client: java.net.Socket, verbose: Boolean = false) = {
   def getHeaders(sc: java.util.Scanner) = {

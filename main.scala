@@ -86,8 +86,14 @@ case class HttpRequest(
   }
 
 
+  def sendDirFileResponse(dirpath: String, file: String, mimeType: String = "application/octet-stream") = {
+    val fpath = new java.io.File(dirpath, file).getAbsolutePath
+    this.sendFileResponse(fpath, mimeType)
+  }
+
 
 } //----  Eof case class HttpRequest ----- //
+
 
 
 def getClientRequest(client: java.net.Socket, verbose: Boolean = false) = {

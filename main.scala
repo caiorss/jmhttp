@@ -242,7 +242,7 @@ class HttpServer(port: Int, verbose: Boolean = false){
     this.addRoute(rule)
   }
 
-
+  /** Add Http route to serve files from a directory */
   def addRouteDirContents(dirUrl: String, dirPath: String) = {
     this.addRoutePathGET(dirUrl){
       _.sendDirListTransvResponse(dirPath, dirUrl)
@@ -260,6 +260,7 @@ class HttpServer(port: Int, verbose: Boolean = false){
     this.addRoute(rule)
   }
 
+  /** Accept client socket connection and try to parser HTTP request. */
   def getRequest(verbose: Boolean = false) = {
     val client = ssock.accept()
     def getHeaders(sc: java.util.Scanner) = {
@@ -312,8 +313,7 @@ class HttpServer(port: Int, verbose: Boolean = false){
     }
   }
 
-  // Run server in synchronous way, without threading.
-  //
+  /** Run server in synchronous way, without threading. */
   def runSync() = while (true) try {
     if (verbose) println("Server: waiting for client connection.")
     val req = this.getRequest()
@@ -323,6 +323,7 @@ class HttpServer(port: Int, verbose: Boolean = false){
     case ex: Throwable => ex.printStackTrace()
   }
 
+  /** Run server in async way with threading. */
   def run() = while (true)  {
     if (verbose) println("Server: waiting for client connection.")
     val req    = this.getRequest()

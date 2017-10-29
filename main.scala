@@ -119,8 +119,10 @@ case class HttpRequest(
       val inp = new java.io.FileInputStream(file)
       val crlf = "\r\n"
       val out = new java.io.DataOutputStream(outStream)
+      val fileSize = new java.io.File(file).length()
       out.writeBytes(s"${httpVersion} 200 OK" + crlf)
       out.writeBytes("Content-Type: " + mimeType + crlf)
+      out.writeBytes("Content-Length: " + fileSize + crlf)
       headers foreach { case (k, v) =>
         out.writeBytes(s"${k}: ${v}" + crlf)
       }

@@ -172,9 +172,10 @@ case class HttpRequest(
   }
 
 
-  def sendDirFileResponse(dirpath: String, file: String, mimeType: String = "application/octet-stream") = {
+  def sendDirFileResponse(dirpath: String, fileURL: String, mimeFn: String => String = Utils.getMimeType) = {
+    val file  = Utils.decodeURL(fileURL)
     val fpath = new java.io.File(dirpath, file).getAbsolutePath
-    this.sendFileResponse(fpath, mimeType)
+    this.sendFileResponse(fpath, mimeFn(file))
   }
 
   def sendDirListResponse(dirpath: String, urlPath: String) = {

@@ -32,12 +32,16 @@ case class HttpRequest(
 }
 
 
-def getClientRequest(client: java.net.Socket) = {
+def getClientRequest(client: java.net.Socket, verbose: Boolean = false) = {
   def getHeaders(sc: java.util.Scanner) = {
     var headers = Map[String, String]()
+
     var line: String = ""
     while({line = sc.nextLine(); line} != ""){
-      line.split(" ") match {
+
+      if (verbose) println("Htp header = " + line)
+
+      line.split(":\\s+", 2) match {
         case Array(key, value)
             => headers += key.stripSuffix(":") -> value
         case Array("")
@@ -57,6 +61,7 @@ def getClientRequest(client: java.net.Socket) = {
     method  = httpMethod,
     path    = urlPath,
     headers = headers,
+    version = httpVersion,
     inpStream = client.getInputStream(),
     outStream = client.getOutputStream()
   )

@@ -38,6 +38,13 @@ object Utils{
     "ptt"  -> "application/mspowerpoint"
   )
 
+  def getMimeType(file: String) =
+    file.split("\\.", 2) match {
+      case Array(_, ext)
+          => mimeTypes get(ext) getOrElse "application/octet-stream"
+      case _
+          => "application/octet-stream"
+    }
 
 }
 

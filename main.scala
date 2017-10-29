@@ -118,7 +118,13 @@ def getClientRequest(client: java.net.Socket, verbose: Boolean = false) = {
   }
 
   val sc = new java.util.Scanner(client.getInputStream())
-  val Array(httpMethod, urlPath, httpVersion) = sc.nextLine().split(" ")
+
+  if (!sc.hasNextLine())
+    throw new IllegalArgumentException("Error: empty http request line.")
+
+  val reqline = sc.nextLine()
+  if (verbose) println("Request line = " + reqline)
+  val Array(httpMethod, urlPath, httpVersion) = reqline.split(" ")
   val headers = getHeaders(sc)
 
   HttpRequest(

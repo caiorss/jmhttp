@@ -24,6 +24,34 @@ object Utils{
   def decodeURL(url: String) =
     java.net.URLDecoder.decode(url, "UTF-8")
 
+  /** Try get IP address of current machine rejecting loopback,
+    * inactive, and virtual network interfaces.
+    */
+  def getLocalAddress(): Option[String] = {
+    import java.net.InetAddress
+    import java.net.NetworkInterface
+    import collection.JavaConverters._
+    def getInterfaceAddress(net: NetworkInterface) = {
+      net.getInterfaceAddresses()
+        .asScala
+        .toSeq
+        .find(inf => inf.getBroadcast() != null)
+        .map(_.getAddress().getHostAddress())
+    }
+    val interfaces = NetworkInterface
+      .getNetworkInterfaces()
+      .asScala
+      .toSeq
+    interfaces.filter(ni =>
+      !ni.isLoopback()          // Exclude loopback interfaces
+        && ni.isUp()            // Select active interface
+        && ni.getHardwareAddress() != null
+        && getInterfaceAddress(ni).isDefined
+    )
+      .map(ni => getInterfaceAddress(ni).get)
+      .headOption
+  } // ----- EOF function getLocalAddress() -------- //
+
   val mimeTypes = Map(
 
     //--- Programming Source Codes, markups and data files.

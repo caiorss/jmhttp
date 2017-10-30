@@ -1,8 +1,6 @@
 package jmhttp.server
 
-
 import java.net.{InetAddress, ServerSocket, Socket}
-
 import jmhttp.utils.Utils
 
 case class HttpRequest(

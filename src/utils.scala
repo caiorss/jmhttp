@@ -24,6 +24,57 @@ object Utils{
   def decodeURL(url: String) =
     java.net.URLDecoder.decode(url, "UTF-8")
 
+  /** Try get IP address of current machine rejecting loopback,
+    * inactive, and virtual network interfaces.
+    */
+  def getLocalAddress(): Option[String] = {
+    import java.net.InetAddress
+    import java.net.NetworkInterface
+    import collection.JavaConverters._
+    def getInterfaceAddress(net: NetworkInterface) = {
+      net.getInterfaceAddresses()
+        .asScala
+        .toSeq
+        .find(inf => inf.getBroadcast() != null)
+        .map(_.getAddress().getHostAddress())
+    }
+    val interfaces = NetworkInterface
+      .getNetworkInterfaces()
+      .asScala
+      .toSeq
+    interfaces.filter(ni =>
+      !ni.isLoopback()          // Exclude loopback interfaces
+        && ni.isUp()            // Select active interface
+        && ni.getHardwareAddress() != null
+        && getInterfaceAddress(ni).isDefined
+    )
+      .map(ni => getInterfaceAddress(ni).get)
+      .headOption
+  } // ----- EOF function getLocalAddress() -------- //
+
+
+  /** Open some URL with default system's browser. */
+  def openUrl(uri: String){
+    import java.awt.Desktop
+    import java.io.IOException
+    import java.net.URI
+    import java.net.URISyntaxException
+    val u = new URI(uri)
+    val desktop = Desktop.getDesktop()
+    desktop.browse(u)
+  }
+
+
+  def runDealy(delay: Long)(action: => Unit) = {
+    val timer = new java.util.Timer()
+    val task = new java.util.TimerTask{
+      def run() = action
+    }
+    // time X 1000 milliseconds
+    timer.schedule(task, delay)
+  }
+
+
   val mimeTypes = Map(
 
     //--- Programming Source Codes, markups and data files.

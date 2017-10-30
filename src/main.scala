@@ -15,18 +15,27 @@ object Main{
 
     val server = new HttpServer(port = 8080, verbose = true)    
 
-    val urlPaths = for {
-      a <- args
-      Array(url, path) = a.split(":")
-    } yield ("/" + url, path)
 
-    println(urlPaths)
-     
-    server.addRouteDirsIndex(urlPaths)
+    args.toList match {
 
-    // for (a <- args) a.split(":") match {
-    //   case Array(url, path) => server.addRouteDirContents("/" + url, path)
-    // }
+      case "--dirlist"::rest 
+          => {
+            val urlPaths = for {
+              a <- rest 
+              Array(url, path) = a.split(":")
+            } yield ("/" + url, path)
+
+            println(urlPaths)    
+            server.addRouteDirsIndex(urlPaths)
+
+          }
+
+      case List("--dir", path)
+          => server.addRouteDir("/", path)
+
+      case _
+          => System.exit(0)
+    }
 
     server.run()
   }

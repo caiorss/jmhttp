@@ -326,14 +326,20 @@ class HttpServer(verbose: Boolean = false){
 
   /** Run server in async way with threading. */
   def run(port: Int = 8080, host: String = "0.0.0.0", timeout: Int = 2000) = {
+    ssock.bind(new java.net.InetSocketAddress(host, port), 60)
     // ssock.setSoTimeout(timeout)
-    // ssock.bind(new java.net.InetSocketAddress(host, port))
     while (true) try {
       if (verbose) println(s"${new java.util.Date()} - server waiting for connection.")
-      this.getRequest() foreach { req =>
-        if (verbose) println(s"\n${new java.util.Date()} - path = ${req.path} - method = ${req.method} - address = ${req.address}")
-        Utils.withThread{ this.serveRequest(req)}
-        println("Client request served")
+
+      val client = this.ssock.accept()
+
+      Utils.withThread{
+        this.parseRequest(client) foreach { req =>
+          if (verbose)
+            println(s"\n${new java.util.Date()} - path = ${req.path} - method = ${req.method} - address = ${req.address}")
+          this.serveRequest(req)
+          println("Client request served")
+        }
       }
     } catch {
       //Continue when a timeout exception happens.

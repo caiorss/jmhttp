@@ -1,6 +1,7 @@
 package jmhttp.main
 
 import jmhttp.server.HttpServer 
+import jmhttp.utils.Utils
 
 object Main{
 
@@ -38,7 +39,19 @@ object Main{
           => System.exit(0)
     }
 
+    // Open website in the browser 500 ms delay after the server start.
+    //
+    Utils.runDealy(500){
+      Utils
+        .getLocalAddress()
+        .foreach { url =>
+        Utils.openUrl("http://" + url + ":8080")
+      }
+    }
+
     server.run()
-  }
-}
+
+  } //-----EoF main() function ----
+
+} // ------ EoF Main object ------
 

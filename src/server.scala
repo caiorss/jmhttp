@@ -291,9 +291,10 @@ class HttpServer(port: Int, verbose: Boolean = false){
 
   /** Run server in async way with threading. */
   def run() = while (true) try {
-    if (verbose) println("Server: waiting for client connection.")
+    // if (verbose) println("Server: waiting for client connection.")
     val req    = this.getRequest()
-    if (verbose) println("Server: client has connected")
+
+    if (verbose) println(s"Request at ${new java.util.Date()} - path = ${req.path} - method = ${req.method} - address = ${req.address} has connected")
     Utils.withThread{ this.serveRequest(req)}
   } catch {
     case ex: Throwable => ex.printStackTrace()

@@ -53,6 +53,10 @@ object Utils{
     "rst"     -> "text/plain",
     "tex"     -> "text/plain",
     "csv"     -> "text/plain",
+    "conf"    -> "text/plain",
+    "config"  -> "text/plain",
+    "ini"     -> "text/plain",
+    "log"     -> "text/plain",
 
     //---- Common text files //
 

@@ -295,7 +295,7 @@ class HttpServer(port: Int, verbose: Boolean = false){
     // if (verbose) println("Server: waiting for client connection.")
     val req    = this.getRequest()
 
-    if (verbose) println(s"Request at ${new java.util.Date()} - path = ${req.path} - method = ${req.method} - address = ${req.address} has connected")
+    if (verbose) println(s"\n${new java.util.Date()} - path = ${req.path} - method = ${req.method} - address = ${req.address}")
     Utils.withThread{ this.serveRequest(req)}
   } catch {
     case ex: Throwable => ex.printStackTrace()

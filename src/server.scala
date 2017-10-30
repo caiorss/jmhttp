@@ -191,7 +191,7 @@ class HttpServer(port: Int, verbose: Boolean = false){
     this.addRoutePathGET(dirUrl){ req =>
       val index = new java.io.File(dirPath, "index.html")
       if (index.isFile())
-        req.sendDirFileResponse(dirPath, "index.html")
+        req.sendRedirect(dirUrl + "/index.html")
       else
         req.sendDirListResponse(dirPath, dirUrl)
     }

@@ -13,8 +13,11 @@ appjar := bin/$(app).jar
 
 all: $(appjar)
 
-$(appjar): $(src)
+force: $(src)
 	scalac $(src) -d $(appjar)
+
+$(appjar): $(src)
+	fsc $(src) -d $(appjar)
 
 uber: $(appjar)
 	jarget uber -scala -sh -m $(appjar) -o bin/jmhttp

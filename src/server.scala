@@ -147,10 +147,10 @@ case class HttpRoute(
   val action:  HttpRequest => Unit
 )
 
-class HttpServer(port: Int, verbose: Boolean = false){
+class HttpServer(verbose: Boolean = false){
   import scala.collection.mutable.ListBuffer
 
-  private val ssock  = new ServerSocket(port)
+  private val ssock  = new ServerSocket()
   private val routes = ListBuffer[HttpRoute]()
 
 
@@ -284,26 +284,30 @@ class HttpServer(port: Int, verbose: Boolean = false){
   }
 
   /** Run server in synchronous way, without threading. */
-  def runSync() = while (true) try {
-    if (verbose) println("Server: waiting for client connection.")
-    val req = this.getRequest()
-    if (verbose) println("Server: client has connected")
-    this.serveRequest(req)
-  } catch {
-    case ex: Throwable => ex.printStackTrace()
+  def runSync(port: Int = 8080, host: String = "0.0.0.0") = {
+    ssock.bind(new java.net.InetSocketAddress(host, port))
+    while (true) try {
+      if (verbose) println("Server: waiting for client connection.")
+      val req = this.getRequest()
+      if (verbose) println("Server: client has connected")
+      this.serveRequest(req)
+    } catch {
+      case ex: Throwable => ex.printStackTrace()
+    }
   }
 
   /** Run server in async way with threading. */
-  def run() = while (true) try {
-    // if (verbose) println("Server: waiting for client connection.")
-    val req    = this.getRequest()
-
-    if (verbose) println(s"\n${new java.util.Date()} - path = ${req.path} - method = ${req.method} - address = ${req.address}")
-    Utils.withThread{ this.serveRequest(req)}
-  } catch {
-    case ex: Throwable => ex.printStackTrace()
+  def run(port: Int = 8080, host: String = "0.0.0.0") = {
+    ssock.bind(new java.net.InetSocketAddress(host, port))
+    while (true) try {
+      // if (verbose) println("Server: waiting for client connection.")
+      val req    = this.getRequest()
+      if (verbose) println(s"\n${new java.util.Date()} - path = ${req.path} - method = ${req.method} - address = ${req.address}")
+      Utils.withThread{ this.serveRequest(req)}
+    } catch {
+      case ex: Throwable => ex.printStackTrace()
+    }
   }
-
 
 } // ----- Eof class HttpServer ----
 

@@ -13,8 +13,7 @@ object Main{
 
   def main(args: Array[String]){
 
-    val server = new HttpServer(port = 8080, verbose = true)    
-
+    val server = new HttpServer(verbose = true)
 
     args.toList match {
 

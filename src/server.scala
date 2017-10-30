@@ -1,7 +1,7 @@
 package jmhttp.server
 
 
-import java.net.{InetAddress, ServerSocket}
+import java.net.{InetAddress, ServerSocket, Socket}
 
 import jmhttp.utils.Utils
 
@@ -240,14 +240,22 @@ class HttpServer(verbose: Boolean = false){
   /** Accept client socket connection and try to parser HTTP request
       returning None for an invalid request message.
     */
-  def getRequest(verbose: Boolean = false): Option[HttpRequest] = {
+  def parseRequest(client: Socket, verbose: Boolean = false): Option[HttpRequest] = {
 
-    val client = ssock.accept()
+    //val client: Socket = ssock.accept()
+
+    println("Accepted client " + client)
+
     def getHeaders(sc: java.util.Scanner) = {
       var headers = Map[String, String]()
 
       var line: String = ""
+
+      println("Getting headers")
+
       while({line = sc.nextLine(); line} != ""){
+
+        println("Header Line = " + line)
 
         if (verbose) println("Htp header = " + line)
 
@@ -266,10 +274,12 @@ class HttpServer(verbose: Boolean = false){
     val sc = new java.util.Scanner(client.getInputStream())
 
     if (!sc.hasNextLine()){
-      println("Client closed")
+      println("Error: Invalid http request. Client closed")
       None
     }
     else {
+
+      println("Reading request line")
       val reqline = sc.nextLine()
 
       println("Request line = " + reqline)

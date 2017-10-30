@@ -229,6 +229,14 @@ class HttpServer(verbose: Boolean = false){
     this.addRoute(rule)
   }
 
+  def addRouteDebug(path: String = "/debug") = {
+    val rule = HttpRoute(
+      matcher = (req: HttpRequest) => req.path.startsWith(path),
+      action  = (req: HttpRequest) => req.sendDebugResponse()
+    )
+    this.addRoute(rule)
+  }
+
   /** Accept client socket connection and try to parser HTTP request. */
   def getRequest(verbose: Boolean = false) = {
     val client = ssock.accept()

@@ -15,6 +15,8 @@ object Main{
 
     val server = new HttpServer(verbose = true)
 
+    server.addRouteDebug("/echo")
+
     args.toList match {
 
       case "--dirlist"::rest 

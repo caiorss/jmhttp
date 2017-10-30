@@ -130,7 +130,10 @@ case class HttpRequest(
     out.writeBytes(crlf)
     val files   = Utils.getAllFiles(dirpath) map(_.toString)
     files foreach { file =>
-      out.writeBytes(s"<a href='${urlPath}/${file}'>${file}</a></br></br>" + crlf)
+      if (urlPath == "/")
+        out.writeBytes(s"<a href='/${file}'>${file}</a></br></br>" + crlf)
+      else
+        out.writeBytes(s"<a href='${urlPath}/${file}'>${file}</a></br></br>" + crlf)
     }
     out.close()
   }

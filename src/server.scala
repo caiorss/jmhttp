@@ -1,7 +1,7 @@
 package jmhttp.server
 
 
-import java.net.{InetAddress, ServerSocket}
+import java.net.{InetAddress, ServerSocket, Socket}
 
 import jmhttp.utils.Utils
 
@@ -237,14 +237,25 @@ class HttpServer(verbose: Boolean = false){
     this.addRoute(rule)
   }
 
-  /** Accept client socket connection and try to parser HTTP request. */
-  def getRequest(verbose: Boolean = false) = {
-    val client = ssock.accept()
+  /** Accept client socket connection and try to parser HTTP request
+      returning None for an invalid request message.
+    */
+  def parseRequest(client: Socket, verbose: Boolean = false): Option[HttpRequest] = {
+
+    //val client: Socket = ssock.accept()
+
+    println("Accepted client " + client)
+
     def getHeaders(sc: java.util.Scanner) = {
       var headers = Map[String, String]()
 
       var line: String = ""
+
+      println("Getting headers")
+
       while({line = sc.nextLine(); line} != ""){
+
+        println("Header Line = " + line)
 
         if (verbose) println("Htp header = " + line)
 
@@ -262,24 +273,31 @@ class HttpServer(verbose: Boolean = false){
 
     val sc = new java.util.Scanner(client.getInputStream())
 
-    if (!sc.hasNextLine())
-      throw new IllegalArgumentException("Error: empty http request line.")
+    if (!sc.hasNextLine()){
+      println("Error: Invalid http request. Client closed")
+      None
+    }
+    else {
 
-    val reqline = sc.nextLine()
-    if (verbose) println("Request line = " + reqline)
-    val Array(httpMethod, urlPath, httpVersion) = reqline.split(" ")
-    val headers = getHeaders(sc)
+      println("Reading request line")
+      val reqline = sc.nextLine()
 
-    HttpRequest(
-      method    = httpMethod,
-      path      = urlPath,
-      headers   = headers,
-      version   = httpVersion,
-      address   = client.getInetAddress(),
-      inpStream = client.getInputStream(),
-      outStream = client.getOutputStream()
-    )
+      println("Request line = " + reqline)
 
+      val Array(httpMethod, urlPath, httpVersion) = reqline.split(" ")
+      val headers = getHeaders(sc)
+
+      val req = HttpRequest(
+        method    = httpMethod,
+        path      = urlPath,
+        headers   = headers,
+        version   = httpVersion,
+        address   = client.getInetAddress(),
+        inpStream = client.getInputStream(),
+        outStream = client.getOutputStream()
+      )
+      Some(req)
+    }
   } //------ End of getClientRequest() ----- //
 
 
@@ -293,27 +311,41 @@ class HttpServer(verbose: Boolean = false){
 
   /** Run server in synchronous way, without threading. */
   def runSync(port: Int = 8080, host: String = "0.0.0.0") = {
-    ssock.bind(new java.net.InetSocketAddress(host, port))
+    ssock.bind(new java.net.InetSocketAddress(host, port), 60)
     while (true) try {
       if (verbose) println("Server: waiting for client connection.")
-      val req = this.getRequest()
-      if (verbose) println("Server: client has connected")
-      this.serveRequest(req)
+      val client = this.ssock.accept()
+      this.parseRequest(client) foreach { req =>
+        if (verbose) println("Server: client has connected")
+        this.serveRequest(req)
+      }
     } catch {
       case ex: Throwable => ex.printStackTrace()
     }
   }
 
   /** Run server in async way with threading. */
-  def run(port: Int = 8080, host: String = "0.0.0.0") = {
-    ssock.bind(new java.net.InetSocketAddress(host, port))
+  def run(port: Int = 8080, host: String = "0.0.0.0", timeout: Int = 2000) = {
+    ssock.bind(new java.net.InetSocketAddress(host, port), 60)
+    // ssock.setSoTimeout(timeout)
     while (true) try {
-      // if (verbose) println("Server: waiting for client connection.")
-      val req    = this.getRequest()
-      if (verbose) println(s"\n${new java.util.Date()} - path = ${req.path} - method = ${req.method} - address = ${req.address}")
-      Utils.withThread{ this.serveRequest(req)}
+      if (verbose) println(s"${new java.util.Date()} - server waiting for connection.")
+
+      val client = this.ssock.accept()
+
+      Utils.withThread{
+        this.parseRequest(client) foreach { req =>
+          if (verbose)
+            println(s"\n${new java.util.Date()} - path = ${req.path} - method = ${req.method} - address = ${req.address}")
+          this.serveRequest(req)
+          println("Client request served")
+        }
+      }
     } catch {
-      case ex: Throwable => ex.printStackTrace()
+      //Continue when a timeout exception happens.
+      case ex: java.net.SocketTimeoutException
+          => ()
+      case ex: java.io.IOException => ex.printStackTrace()
     }
   }
 

@@ -19,6 +19,9 @@ case class HttpRequest(
 
   type HttpHeaders = Map[String, String]
 
+  def print() =
+    println(s"\n${new java.util.Date()} - path = ${this.path} - method = ${this.method} - address = ${this.address}")
+
   /** Send response with http request parameters for debugging. */
   def sendDebugResponse() {
     val crlf = "\r\n"
@@ -335,8 +338,7 @@ class HttpServer(verbose: Boolean = false){
 
       Utils.withThread{
         this.parseRequest(client) foreach { req =>
-          if (verbose)
-            println(s"\n${new java.util.Date()} - path = ${req.path} - method = ${req.method} - address = ${req.address}")
+          if (verbose) req.print()          
           this.serveRequest(req)
           println("Client request served")
         }

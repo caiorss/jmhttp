@@ -1,7 +1,7 @@
 package jmhttp.server
 
 
-import java.net.{ServerSocket}
+import java.net.{InetAddress, ServerSocket}
 
 import jmhttp.utils.Utils
 
@@ -10,8 +10,9 @@ case class HttpRequest(
   path:      String,
   headers:   Map[String, String],
   version:   String,
+  address:   InetAddress,
   inpStream: java.io.InputStream,
-  outStream: java.io.OutputStream,
+  outStream: java.io.OutputStream
 ) {
 
   val httpVersion = "HTTP/1.0"
@@ -262,6 +263,7 @@ class HttpServer(port: Int, verbose: Boolean = false){
       path    = urlPath,
       headers = headers,
       version = httpVersion,
+      address = client.getInetAddress(),
       inpStream = client.getInputStream(),
       outStream = client.getOutputStream()
     )

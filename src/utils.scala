@@ -52,6 +52,18 @@ object Utils{
       .headOption
   } // ----- EOF function getLocalAddress() -------- //
 
+
+  /** Open some URL with default system's browser. */
+  def openUrl(uri: String){
+    import java.awt.Desktop
+    import java.io.IOException
+    import java.net.URI
+    import java.net.URISyntaxException
+    val u = new URI(uri)
+    val desktop = Desktop.getDesktop()
+    desktop.browse(u)
+  }
+
   val mimeTypes = Map(
 
     //--- Programming Source Codes, markups and data files.

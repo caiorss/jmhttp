@@ -311,10 +311,11 @@ class HttpServer(verbose: Boolean = false){
 
   /** Run server in synchronous way, without threading. */
   def runSync(port: Int = 8080, host: String = "0.0.0.0") = {
-    ssock.bind(new java.net.InetSocketAddress(host, port))
+    ssock.bind(new java.net.InetSocketAddress(host, port), 60)
     while (true) try {
       if (verbose) println("Server: waiting for client connection.")
-      this.getRequest() foreach { req =>
+      val client = this.ssock.accept()
+      this.parseRequest(client) foreach { req =>
         if (verbose) println("Server: client has connected")
         this.serveRequest(req)
       }

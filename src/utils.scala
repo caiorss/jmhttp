@@ -26,76 +26,126 @@ object Utils{
 
   val mimeTypes = Map(
 
+    //--- Programming Source Codes, markups and data files.
+    //
+    // Those formats will be viewed in the browser instead of being
+    // downloaded.
+    // 
+    "c"       -> "text/plain",  // C source code 
+    "h"       -> "text/plain",  // C header file 
+    "cpp"     -> "text/plain",  // C++ file 
+    "hpp"     -> "text/plain",  // C++ header 
+    "scala"   -> "text/plain",  // Scala code 
+    "py"      -> "text/plain",  // Python code
+    "rb"      -> "text/plain",  // Ruby code
+    "m"       -> "text/plain",  // Matlab/Octave code
+    "hs"      -> "text/plain",  // Haskell code
+    "fsx"     -> "text/plain",  // F# / Fsharp script
+    "fs"      -> "text/plain",  // F# / Fsharp code
+    "cs"      -> "text/plain",  // C# / Code 
+    "desktop" -> "text/plain",  // *.desktop Linux file 
+    "sh"      -> "text/plain",  // Unix shell script file 
+    "csh"     -> "text/plain",  // BSD shell script 
+    "ml"      -> "text/plain",  // OCaml code 
+    "el"      -> "text/plain",  // Emacs/Elisp source code
+    "org"     -> "text/plain",  // Emacs/Elisp org-mode file.
+    "md"      -> "text/plain",  // Markdown file
+    "rst"     -> "text/plain",
+    "tex"     -> "text/plain",
+    "csv"     -> "text/plain",
+
     //---- Common text files //
-    "csv"  -> "text/csv",
-    "json" -> "application/json",
 
-    "vcard" -> "text/vcard",
-    "vcf"   -> "text/vcf",
+    "json"    -> "application/json",
+    "vcard"   -> "text/vcard",
+    "vcf"     -> "text/vcf",
 
 
-    "css"  -> "text/css",
-    "html" -> "text/html",
-    "js"   -> "application/x-javascript",
-    "txt"  -> "text/plain",
-    "sh"   -> "application/x-sh",
-    "csh"  -> "application/x-csh",
-
+    "css"     -> "text/css",
+    "html"    -> "text/html",
+    "js"      -> "application/x-javascript",
+    "txt"     -> "text/plain",
 
     // -- Images -------- //
-    "gif"  -> "image/gif",
-    "ico"  -> "image/x-icon",
-    "jfif" -> "image/jpeg",
-    "jpg"  -> "image/jpeg",
-    "jpeg" -> "image/jpeg",
-    "jpeg" -> "image/jpeg",
-    "png"  -> "image/png",
-    "qti"  -> "image/x-quicktime",
-    "tif"  -> "image/tiff",
-    "tiff" -> "image/tiff",
+    "gif"     -> "image/gif",
+    "ico"     -> "image/x-icon",
+    "jfif"    -> "image/jpeg",
+    "jpg"     -> "image/jpeg",
+    "jpeg"    -> "image/jpeg",
+    "jpeg"    -> "image/jpeg",
+    "png"     -> "image/png",
+    "qti"     -> "image/x-quicktime",
+    "tif"     -> "image/tiff",
+    "tiff"    -> "image/tiff",
 
     //--- Audio -----------//
-    "mp3"  -> "audio/mpeg",
-    "ogg"  -> "audio/vorbis, application/ogg",
+    "mp3"     -> "audio/mpeg",
+    "ogg"     -> "audio/vorbis, application/ogg",
 
     //-- Video -----------//
-    "mp4" -> "video/mp4",
-    "flv" -> "video/x-flv",
-    "3gp" -> "video/3gpp",
-    "avi" -> "video/x-msvideo",
-    "wmv" -> "video/x-ms-wmv",
-    "ogv" -> "video/ogg",
-    "webm" -> "video/webm",
-    "mov" -> "video/quicktime",
-    "movie" -> "video/x-sgi-movie",
+    "mp4"     -> "video/mp4",
+    "flv"     -> "video/x-flv",
+    "3gp"     -> "video/3gpp",
+    "avi"     -> "video/x-msvideo",
+    "wmv"     -> "video/x-ms-wmv",
+    "ogv"     -> "video/ogg",
+    "webm"    -> "video/webm",
+    "mov"     -> "video/quicktime",
+    "movie"   -> "video/x-sgi-movie",
 
     //--- Archives -------//
-    "rar" -> "application/x-rar-compressed",
-    "tar" -> "application/x-tar",
-    "zip" -> "application/zip",
-    "7z"  -> "application/x-7z-compressed",
+    "rar"     -> "application/x-rar-compressed",
+    "tar"     -> "application/x-tar",
+    "zip"     -> "application/zip",
+    "7z"      -> "application/x-7z-compressed",
 
     //--- Executable ----//
-    "jar"  -> "application/java-archive",
-    "war"  -> "application/java-archive",
-    "ear"  -> "application/java-archive", 
-    "mkpg" -> "application/vnd.apple.installer+xml",
-    "jnlp" -> "application/x-java-jnlp-file",
-    "rpm"  -> "application/x-redhat-package-manager",
+    "jar"     -> "application/java-archive",
+    "war"     -> "application/java-archive",
+    "ear"     -> "application/java-archive", 
+    "mkpg"    -> "application/vnd.apple.installer+xml",
+    "jnlp"    -> "application/x-java-jnlp-file",
+    "rpm"     -> "application/x-redhat-package-manager",
 
     //-- Documents  -----─//
-    "pdf"  -> "application/pdf",
-    "epub" -> "application/epub+zip",
-    "eps"  -> "application/postscript",
-    "ps"   -> "application/postscript",
-    "man"  -> "application/x-troff-man",
+    "pdf"     -> "application/pdf",
+    "epub"    -> "application/epub+zip",
+    "eps"     -> "application/postscript",
+    "ps"      -> "application/postscript",
+    "man"     -> "application/x-troff-man",
 
-    "ppt"  -> "application/mspowerpoint",
-    "odp"  -> "application/vnd.oasis.opendocument.presentation",
-    "ods"  -> "application/vnd.oasis.opendocument.spreadsheet",
+    ".doc"    ->  "application/msword",
+    "docx"    ->    "application/vnd.openxmlformats-officedocument.wordprocessingml.documen",
+    "docm"    ->    "application/vnd.ms-word.document.macroEnabled.12",
+    "dotm"    ->    "application/vnd.ms-word.template.macroEnabled.12",
+    "xls"     ->     "application/vnd.ms-excel",
+    "xlt"     ->     "application/vnd.ms-excel",
+    "xla"     ->     "application/vnd.ms-excel",
+
+    "xlsx"    ->    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "xltx"    ->    "application/vnd.openxmlformats-officedocument.spreadsheetml.template",
+    "xlsm"    ->    "application/vnd.ms-excel.sheet.macroEnabled.12",
+    "xltm"    ->    "application/vnd.ms-excel.template.macroEnabled.12",
+    "xlam"    ->    "application/vnd.ms-excel.addin.macroEnabled.12",
+    "xlsb"    ->    "application/vnd.ms-excel.sheet.binary.macroEnabled.12",
+
+    "ppt"     ->     "application/vnd.ms-powerpoint",
+    "pot"     ->     "application/vnd.ms-powerpoint",
+    "pps"     ->     "application/vnd.ms-powerpoint",
+    "ppa"     ->     "application/vnd.ms-powerpoint",
+    "pptx"    ->    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "potx"    ->    "application/vnd.openxmlformats-officedocument.presentationml.template",
+    "ppsx"    ->    "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
+    "ppam"    ->    "application/vnd.ms-powerpoint.addin.macroEnabled.12",
+    "pptm"    ->    "application/vnd.ms-powerpoint.presentation.macroEnabled.12",
+    "potm"    ->    "application/vnd.ms-powerpoint.template.macroEnabled.12",
+    "ppsm"    ->    "application/vnd.ms-powerpoint.slideshow.macroEnabled.12",
+
+    "odp"     -> "application/vnd.oasis.opendocument.presentation",
+    "ods"     -> "application/vnd.oasis.opendocument.spreadsheet",
 
     //--- Misc -------------//
-    "pem"  -> "application/x-x509-ca-cert"
+    "pem"     -> "application/x-x509-ca-cert"
 
   )
 

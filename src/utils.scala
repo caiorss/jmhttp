@@ -27,11 +27,20 @@ object Utils{
   val mimeTypes = Map(
 
     //---- Common text files //
+    "csv"  -> "text/csv",
+    "json" -> "application/json",
+
+    "vcard" -> "text/vcard",
+    "vcf"   -> "text/vcf",
+
+
     "css"  -> "text/css",
     "html" -> "text/html",
     "js"   -> "application/x-javascript",
     "txt"  -> "text/plain",
     "sh"   -> "application/x-sh",
+    "csh"  -> "application/x-csh",
+
 
     // -- Images -------- //
     "gif"  -> "image/gif",
@@ -60,10 +69,34 @@ object Utils{
     "mov" -> "video/quicktime",
     "movie" -> "video/x-sgi-movie",
 
+    //--- Archives -------//
+    "rar" -> "application/x-rar-compressed",
+    "tar" -> "application/x-tar",
+    "zip" -> "application/zip",
+    "7z"  -> "application/x-7z-compressed",
+
+    //--- Executable ----//
+    "jar"  -> "application/java-archive",
+    "war"  -> "application/java-archive",
+    "ear"  -> "application/java-archive", 
+    "mkpg" -> "application/vnd.apple.installer+xml",
+    "jnlp" -> "application/x-java-jnlp-file",
+    "rpm"  -> "application/x-redhat-package-manager",
 
     //-- Documents  -----─//
     "pdf"  -> "application/pdf",
-    "ptt"  -> "application/mspowerpoint"
+    "epub" -> "application/epub+zip",
+    "eps"  -> "application/postscript",
+    "ps"   -> "application/postscript",
+    "man"  -> "application/x-troff-man",
+
+    "ppt"  -> "application/mspowerpoint",
+    "odp"  -> "application/vnd.oasis.opendocument.presentation",
+    "ods"  -> "application/vnd.oasis.opendocument.spreadsheet",
+
+    //--- Misc -------------//
+    "pem"  -> "application/x-x509-ca-cert"
+
   )
 
   def getMimeType(file: String) =

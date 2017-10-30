@@ -23,7 +23,7 @@ object Main{
           => {
             val urlPaths = for {
               a <- rest 
-              Array(url, path) = a.split(":")
+              Array(url, path) = a.split(":", 2)
             } yield ("/" + url, path)
 
             println(urlPaths)    
@@ -32,7 +32,7 @@ object Main{
           }
 
       case List("--dir", path)
-          => server.addRouteDir("/", path)
+          => server.addRouteDirContents("/", path)
 
       case _
           => System.exit(0)

@@ -260,11 +260,11 @@ class HttpServer(port: Int, verbose: Boolean = false){
     val headers = getHeaders(sc)
 
     HttpRequest(
-      method  = httpMethod,
-      path    = urlPath,
-      headers = headers,
-      version = httpVersion,
-      address = client.getInetAddress(),
+      method    = httpMethod,
+      path      = urlPath,
+      headers   = headers,
+      version   = httpVersion,
+      address   = client.getInetAddress(),
       inpStream = client.getInputStream(),
       outStream = client.getOutputStream()
     )

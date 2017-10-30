@@ -1,5 +1,14 @@
-* SxhttpServer 
+* jmtthp server - A micro scala/java Http server 
 
-Objective: Make a small and simple http server in Scala to share files
-in the local network. 
+jmhttp server - is a micro self-contained http server to serve and share static
+files across local netork. 
+
+Objectives:
+
+ - Make a small proof-of-concept web server in Scala to serve files
+   accross local network.
+
+ - The server must be easy to use and require few configuration.
+
+ - 
 

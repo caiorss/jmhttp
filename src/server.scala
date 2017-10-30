@@ -114,7 +114,10 @@ case class HttpRequest(
     val files   = entries.filter(_.isFile).map(_.getName)
 
     files foreach { file =>
-      out.writeBytes(s"<a href='${urlPath}/${file}'>${file}</a></br></br>" + crlf)
+      if (urlPath == "/")
+        out.writeBytes(s"<a href='/${file}'>${file}</a></br></br>" + crlf)
+      else
+        out.writeBytes(s"<a href='${urlPath}/${file}'>${file}</a></br></br>" + crlf)
     }
     out.close()
   }
@@ -131,8 +134,6 @@ case class HttpRequest(
     }
     out.close()
   }
-
-
 
 
 } //----  Eof case class HttpRequest ----- //

@@ -64,6 +64,17 @@ object Utils{
     desktop.browse(u)
   }
 
+
+  def runDealy(delay: Long)(action: => Unit) = {
+    val timer = new java.util.Timer()
+    val task = new java.util.TimerTask{
+      def run() = action
+    }
+    // time X 1000 milliseconds
+    timer.schedule(task, delay)
+  }
+
+
   val mimeTypes = Map(
 
     //--- Programming Source Codes, markups and data files.

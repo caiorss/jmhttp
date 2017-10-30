@@ -6,19 +6,18 @@ app  := jmhttp
 
 # ===== S E T T I N G S =====================;;
 
-appjar := $(app).jar
+appjar := bin/$(app).jar
 
 
 # ===== R U L E S ========================== ;;
 
 all: $(appjar)
 
-
 $(appjar): $(src)
 	scalac $(src) -d $(appjar)
 
 uber: $(appjar)
-	jarget uber -scala -sh -m $(appjar) -o jmhttp
+	jarget uber -scala -sh -m $(appjar) -o bin/jmhttp
 
 doc: $(src)
 	scaladoc $(src) -doc-title "jmHttp Server - Scala Micro Http Server" -doc-version "1.0" -doc-source-url "https://github.com/caiorss/jmhttp" -d ./bin/docs

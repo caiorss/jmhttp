@@ -160,22 +160,46 @@ class HttpServer(port: Int, verbose: Boolean = false){
 
   def addRouteParamGET(path: String)(action: (HttpRequest, String) => Unit) = {
     val rule = HttpRoute(
-      matcher = (req: HttpRequest) => req.method == "GET" && req.path.startsWith(path + "/"),
+      matcher = (req: HttpRequest) => {
+        if (path == "/")
+          req.method == "GET" &&  req.path.startsWith("/")
+        else
+          req.method == "GET" &&  req.path.startsWith(path + "/")
+      },
       action  = (req: HttpRequest) => action(req, req.path.stripPrefix(path + "/"))
     )
     this.addRoute(rule)
   }
 
   /** Add Http route to serve files from a directory */
-  def addRouteDirContents(dirUrl: String, dirPath: String) = {
-    this.addRoutePathGET(dirUrl){
-      _.sendDirListTransvResponse(dirPath, dirUrl)
+  def addRouteDirContents(dirUrl: String, dirPath: String, showIndex: Boolean = true) = {
+    this.addRoutePathGET(dirUrl){ req =>
+      val index = new java.io.File(dirPath, "index.html")
+      if (showIndex && index.isFile())
+        req.sendRedirect(dirUrl + "/index.html")
+      else
+        req.sendDirListTransvResponse(dirPath, dirUrl)
     }
     this.addRouteParamGET(dirUrl){ (req: HttpRequest, file: String) =>
       req.sendDirFileResponse(dirPath, file)
     }
   }
 
+
+  /** Add Http route to serve files from a directory */
+  def addRouteDir(dirUrl: String, dirPath: String) = {
+    this.addRoutePathGET(dirUrl){ req =>
+      val index = new java.io.File(dirPath, "index.html")
+      if (index.isFile())
+        req.sendRedirect(dirUrl + "/index.html")
+      else
+        req.sendDirListResponse(dirPath, dirUrl)
+    }
+    this.addRouteParamGET(dirUrl){ (req: HttpRequest, file: String) =>
+      req.sendDirFileResponse(dirPath, file)
+    }
+  }
+  
 
   def addRouteDirsIndex(urlPaths: Seq[(String, String)]) = {
     val indexPage = urlPaths.foldLeft(""){ (acc, tpl) =>

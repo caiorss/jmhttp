@@ -25,4 +25,4 @@ doc: $(src)
 
 
 test: $(appjar)
-	scala $(appjar) image:/home/archbox/Pictures music:/home/archbox/Music wiki:/home/archbox/Documents/wiki
+	scala $(appjar) --dirlist image:/home/archbox/Pictures music:/home/archbox/Music wiki:/home/archbox/Documents/wiki

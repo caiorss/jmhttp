@@ -18,10 +18,10 @@ $(appjar): $(src)
 	scalac $(src) -d $(appjar)
 
 uber: $(appjar)
-	jarget uber -scala -sh -m $(appjar) -o jmtthp
+	jarget uber -scala -sh -m $(appjar) -o jmhttp
 
 doc: $(src)
-	scaladoc $(src) -doc-title "Mtthp Server - Scala Micrio" -doc-version "1.0" -doc-source-url "https://github.com/caiorss/jarget" -d ./bin/docs
+	scaladoc $(src) -doc-title "jmHttp Server - Scala Micro Http Server" -doc-version "1.0" -doc-source-url "https://github.com/caiorss/jmhttp" -d ./bin/docs
 
 
 test: $(appjar)

@@ -1,4 +1,9 @@
+#+TITLE: jmHttp Server 
+#+DESCRIPTION: A portable http server for distributing file on Local Network 
+#+STARTUP: content 
+
 * jmtthp server - A micro scala/java Http server 
+** Overview 
 
 jmhttp server - is a micro self-contained http server to serve and share static
 files across local netork. 
@@ -12,3 +17,17 @@ Objectives:
 
  - 
 
+** Tasklist 
+
+ - [ ] - Implement a consistent command line handling.
+
+ - [ ] - _Maybe_: Implement a Java Swing GUI to make easier to users
+   start, stop and control the server.
+
+ - [ ] - Add basic HTTP authentication.
+
+ - [ ] - Implement logging
+
+ - [ ] - Make server configuration customizeable
+
+ - [ ] - 

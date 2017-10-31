@@ -298,21 +298,6 @@ class HttpServer(verbose: Boolean = false){
   }
   
 
-  def addRouteDirsIndex(urlPaths: Seq[(String, String)]) = {
-    val indexPage = urlPaths.foldLeft(""){ (acc, tpl) =>
-      val (dirUrl, dirPath) = tpl
-      acc + "\n" + s"Directory: <a href='${dirUrl}'>${dirUrl}</a></br></br>"
-    }
-
-    this.addRoutePathGET("/"){
-      _.sendTextResponse(indexPage, headers = Map("Content-Type" -> "text/html"))
-    }
-
-    urlPaths foreach { case (dirUrl, dirPath) =>
-      this.addRouteDirContents(dirUrl, dirPath)
-    }
-  }
-
   def addRouteRedirect(pred: String => Boolean, url: String) = {
     val rule = HttpRoute(
       matcher = (req: HttpRequest) => pred(req.path),
@@ -325,6 +310,21 @@ class HttpServer(verbose: Boolean = false){
     this.addRouteParamGET(urlPath){ (req: HttpRequest, fileURL: String) =>
       println("File URL = " + fileURL)
       req.sendDirNavResponse(dirPath, urlPath, fileURL)
+    }
+  }
+
+  def addRouteDirsIndex(urlPaths: Seq[(String, String)]) = {
+    val indexPage = urlPaths.foldLeft(""){ (acc, tpl) =>
+      val (dirUrl, dirPath) = tpl
+      acc + "\n" + s"Directory: <a href='${dirUrl}'>${dirUrl}</a></br></br>"
+    }
+
+    this.addRoutePathGET("/"){
+      _.sendTextResponse(indexPage, headers = Map("Content-Type" -> "text/html"))
+    }
+
+    urlPaths foreach { case (dirUrl, dirPath) =>
+      this.addRouteDirNav(dirPath, dirUrl)
     }
   }
 

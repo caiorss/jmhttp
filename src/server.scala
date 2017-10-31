@@ -195,7 +195,8 @@ case class HttpRequest(
     dirPath: String,
     urlPath: String,
     fileURL: String,
-    mimeFn:  String => String = Utils.getMimeType
+    mimeFn:  String => String = Utils.getMimeType,
+    showIndex: Boolean = true 
   ) = {
 
     // Secure against web server against Attacks Based On File and Path Names
@@ -220,13 +221,16 @@ case class HttpRequest(
 
       case _ if file.isDirectory()
           => {
-            this.sendDirectoryNavListResponse(
-              dirPath,
-              file.getAbsolutePath,
-              new java.io.File(urlPath, fileName).toString
-            )
-
-          }
+            val index = new java.io.File(file, "index.html")
+            if (showIndex && index.isFile())
+              this.sendRedirect(new java.io.File(urlPath, fileName).toString + "/" + "index.html")              
+            else            
+              this.sendDirectoryNavListResponse(
+                dirPath,
+                file.getAbsolutePath,
+                new java.io.File(urlPath, fileName).toString
+              )
+          }    
     }
   }
 

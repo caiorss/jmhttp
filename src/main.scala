@@ -33,7 +33,7 @@ object Main{
           }
 
       case List("--dir", path)
-          => server.addRouteDirContents("/", path)
+          => server.addRouteDirNav(path, "/")
 
       case _
           => System.exit(0)

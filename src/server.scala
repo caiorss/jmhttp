@@ -98,65 +98,13 @@ case class HttpRequest(
   }
 
 
-  def sendDirFileResponse(
-    dirpath: String,
-    fileURL: String,
-    mimeFn: String => String = Utils.getMimeType
-  ) = {
-
-    // Secure against web server against Attacks Based On File and Path Names
-    // by removing (..) character and disllowing access to top directories.
-    // See: https://www.w3.org/Protocols/rfc2616/rfc2616-sec15.html
-    //
-    val file  = Utils.decodeURL(fileURL).replace("..", "")
-    val fpath = new java.io.File(dirpath, file).getAbsolutePath
-    this.sendFileResponse(fpath, mimeFn(file))
-  }
-
-  def sendDirListResponse(dirpath: String, urlPath: String) = {
-    val crlf = "\r\n"
-    val out = new java.io.DataOutputStream(outStream)
-    out.writeBytes(s"${httpVersion} 200 OK"  + crlf)
-    out.writeBytes("Content-type: text/html" + crlf)
-    out.writeBytes(crlf)
-
-    val entries = new java.io.File(dirpath).listFiles
-    val files   = entries.filter(_.isFile).map(_.getName)
-
-    files foreach { file =>
-      if (urlPath == "/")
-        out.writeBytes(s"<a href='/${file}'>${file}</a></br></br>" + crlf)
-      else
-        out.writeBytes(s"<a href='${urlPath}/${file}'>${file}</a></br></br>" + crlf)
-    }
-    out.close()
-  }
-
-  def sendDirListTransvResponse(dirpath: String, urlPath: String) = {
-    val crlf = "\r\n"
-    val out = new java.io.DataOutputStream(outStream)
-    out.writeBytes(s"${httpVersion} 200 OK"  + crlf)
-    out.writeBytes("Content-type: text/html" + crlf)
-    out.writeBytes(crlf)
-    val files   = Utils.getAllFiles(dirpath) map(_.toString)
-    files foreach { file =>
-      if (urlPath == "/")
-        out.writeBytes(s"<a href='/${file}'>${file}</a></br></br>" + crlf)
-      else
-        out.writeBytes(s"<a href='${urlPath}/${file}'>${file}</a></br></br>" + crlf)
-    }
-    out.close()
-  }
-
   def sendDirectoryNavListResponse(rootPath: String, dirPath: String, urlPath: String) = {
-
     def relativePath(root: String, path: String): String = {
       import java.nio.file.{Paths, Path}
       val rp = Paths.get(root)
       val p  = Paths.get(path)
       rp.relativize(p).toString
     }
-
     val crlf = "\r\n"
     val out = new java.io.DataOutputStream(outStream)
     out.writeBytes(s"${httpVersion} 200 OK"  + crlf)
@@ -271,36 +219,6 @@ class HttpServer(verbose: Boolean = false){
     )
     this.addRoute(rule)
   }
-
-  /** Add Http route to serve files from a directory */
-  def addRouteDirContents(dirUrl: String, dirPath: String, showIndex: Boolean = true) = {
-    this.addRoutePathGET(dirUrl){ req =>
-      val index = new java.io.File(dirPath, "index.html")
-      if (showIndex && index.isFile())
-        req.sendRedirect(dirUrl + "/index.html")
-      else
-        req.sendDirListTransvResponse(dirPath, dirUrl)
-    }
-    this.addRouteParamGET(dirUrl){ (req: HttpRequest, file: String) =>
-      req.sendDirFileResponse(dirPath, file)
-    }
-  }
-
-
-  /** Add Http route to serve files from a directory */
-  def addRouteDir(dirUrl: String, dirPath: String) = {
-    this.addRoutePathGET(dirUrl){ req =>
-      val index = new java.io.File(dirPath, "index.html")
-      if (index.isFile())
-        req.sendRedirect(dirUrl + "/index.html")
-      else
-        req.sendDirListResponse(dirPath, dirUrl)
-    }
-    this.addRouteParamGET(dirUrl){ (req: HttpRequest, file: String) =>
-      req.sendDirFileResponse(dirPath, file)
-    }
-  }
-  
 
   def addRouteRedirect(pred: String => Boolean, url: String) = {
     val rule = HttpRoute(

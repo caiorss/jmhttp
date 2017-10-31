@@ -183,6 +183,52 @@ case class HttpRequest(
   }
 
 
+  def sendDirNavResponse(
+    dirPath: String,
+    urlPath: String,
+    fileURL: String,
+    mimeFn:  String => String = Utils.getMimeType
+  ) = {
+
+    def relativePath(root: String, path: String): String = {
+      import java.nio.file.{Paths, Path}
+      val rp = Paths.get(root)
+      val p  = Paths.get(path)
+      rp.relativize(p).toString
+    }
+
+    // Secure against web server against Attacks Based On File and Path Names
+    // See: https://www.w3.org/Protocols/rfc2616/rfc2616-sec15.html
+    //
+    val fileName = Utils.decodeURL(fileURL).replace("..", "")
+    val file = new java.io.File(dirPath, fileName)
+
+    println("-----------------------------")
+    println("dirPath = " + dirPath)
+    println("urlPath = " + urlPath)
+    println("fileURL = " + fileURL)
+    println("file    = " + file)
+    println("-----------------------------")
+
+    file match {
+      case _ if !file.exists()
+          => this.send404Response(s"Error: file or directory ${file} not found.")
+
+      case _ if file.isFile()
+          =>  this.sendFileResponse(file.getAbsolutePath, mimeFn(file.getAbsolutePath))
+
+      case _ if file.isDirectory()
+          => {
+            this.sendDirectoryNavListResponse(
+              file.getAbsolutePath,
+              new java.io.File(urlPath, fileName).toString
+            )
+
+          }
+    }
+  }
+
+
 } //----  Eof case class HttpRequest ----- //
 
 

@@ -148,18 +148,26 @@ case class HttpRequest(
     out.close()
   }
 
-  def sendDirectoryNavListResponse(dirpath: String, urlPath: String) = {
+  def sendDirectoryNavListResponse(rootPath: String, dirPath: String, urlPath: String) = {
+
+    def relativePath(root: String, path: String): String = {
+      import java.nio.file.{Paths, Path}
+      val rp = Paths.get(root)
+      val p  = Paths.get(path)
+      rp.relativize(p).toString
+    }
+
     val crlf = "\r\n"
     val out = new java.io.DataOutputStream(outStream)
     out.writeBytes(s"${httpVersion} 200 OK"  + crlf)
     out.writeBytes("Content-type: text/html" + crlf)
     out.writeBytes(crlf)
 
-    val contents = new java.io.File(dirpath).listFiles
+    val contents = new java.io.File(dirPath).listFiles
     val files = contents.filter(_.isFile).map(_.getName)
     val dirs  = contents.filter(_.isDirectory).map(_.getName)
 
-    out.writeBytes("<h1>Directory Contents</h1>" + crlf)
+    out.writeBytes(s"<h1>Directory Contents of /${relativePath(rootPath, dirPath)}</h1>" + crlf)
 
     out.writeBytes("<h2>Directories</h2>" + crlf)
 
@@ -190,13 +198,6 @@ case class HttpRequest(
     mimeFn:  String => String = Utils.getMimeType
   ) = {
 
-    def relativePath(root: String, path: String): String = {
-      import java.nio.file.{Paths, Path}
-      val rp = Paths.get(root)
-      val p  = Paths.get(path)
-      rp.relativize(p).toString
-    }
-
     // Secure against web server against Attacks Based On File and Path Names
     // See: https://www.w3.org/Protocols/rfc2616/rfc2616-sec15.html
     //
@@ -220,6 +221,7 @@ case class HttpRequest(
       case _ if file.isDirectory()
           => {
             this.sendDirectoryNavListResponse(
+              dirPath,
               file.getAbsolutePath,
               new java.io.File(urlPath, fileName).toString
             )

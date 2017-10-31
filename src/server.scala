@@ -148,6 +148,40 @@ case class HttpRequest(
     out.close()
   }
 
+  def sendDirectoryNavListResponse(dirpath: String, urlPath: String) = {
+    val crlf = "\r\n"
+    val out = new java.io.DataOutputStream(outStream)
+    out.writeBytes(s"${httpVersion} 200 OK"  + crlf)
+    out.writeBytes("Content-type: text/html" + crlf)
+    out.writeBytes(crlf)
+
+    val contents = new java.io.File(dirpath).listFiles
+    val files = contents.filter(_.isFile).map(_.getName)
+    val dirs  = contents.filter(_.isDirectory).map(_.getName)
+
+    out.writeBytes("<h1>Directory Contents</h1>" + crlf)
+
+    out.writeBytes("<h2>Directories</h2>" + crlf)
+
+    dirs foreach { dir =>
+      if (urlPath == "/")
+        out.writeBytes(s"<a href='/${dir}'>${dir}</a></br></br>" + crlf)
+      else
+        out.writeBytes(s"<a href='${urlPath}/${dir}'>${dir}</a></br></br>" + crlf)
+    }
+
+    out.writeBytes("<h2>Files</h2>" + crlf)
+
+    files foreach { file =>
+      if (urlPath == "/")
+        out.writeBytes(s"<a href='/${file}'>${file}</a></br></br>" + crlf)
+      else
+        out.writeBytes(s"<a href='${urlPath}/${file}'>${file}</a></br></br>" + crlf)
+    }
+
+    out.close()
+  }
+
 
 } //----  Eof case class HttpRequest ----- //
 

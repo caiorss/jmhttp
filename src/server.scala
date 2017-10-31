@@ -319,6 +319,13 @@ class HttpServer(verbose: Boolean = false){
     this.addRoute(rule)
   }
 
+  def addRouteDirNav(dirPath: String, urlPath: String) = {
+    this.addRouteParamGET(urlPath){ (req: HttpRequest, fileURL: String) =>
+      println("File URL = " + fileURL)
+      req.sendDirNavResponse(dirPath, urlPath, fileURL)
+    }
+  }
+
   def addRouteDebug(path: String = "/debug") = {
     val rule = HttpRoute(
       matcher = (req: HttpRequest) => req.path.startsWith(path),

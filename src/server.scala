@@ -148,6 +148,92 @@ case class HttpRequest(
     out.close()
   }
 
+  def sendDirectoryNavListResponse(rootPath: String, dirPath: String, urlPath: String) = {
+
+    def relativePath(root: String, path: String): String = {
+      import java.nio.file.{Paths, Path}
+      val rp = Paths.get(root)
+      val p  = Paths.get(path)
+      rp.relativize(p).toString
+    }
+
+    val crlf = "\r\n"
+    val out = new java.io.DataOutputStream(outStream)
+    out.writeBytes(s"${httpVersion} 200 OK"  + crlf)
+    out.writeBytes("Content-type: text/html" + crlf)
+    out.writeBytes(crlf)
+
+    val contents = new java.io.File(dirPath).listFiles
+    val files = contents.filter(_.isFile).map(_.getName)
+    val dirs  = contents.filter(_.isDirectory).map(_.getName)
+
+    out.writeBytes(s"<h1>Directory Contents of /${relativePath(rootPath, dirPath)}</h1>" + crlf)
+
+    out.writeBytes("<h2>Directories</h2>" + crlf)
+
+    dirs foreach { dir =>
+      if (urlPath == "/")
+        out.writeBytes(s"<a href='/${dir}'>${dir}</a></br></br>" + crlf)
+      else
+        out.writeBytes(s"<a href='${urlPath}/${dir}'>${dir}</a></br></br>" + crlf)
+    }
+
+    out.writeBytes("<h2>Files</h2>" + crlf)
+
+    files foreach { file =>
+      if (urlPath == "/")
+        out.writeBytes(s"<a href='/${file}'>${file}</a></br></br>" + crlf)
+      else
+        out.writeBytes(s"<a href='${urlPath}/${file}'>${file}</a></br></br>" + crlf)
+    }
+
+    out.close()
+  }
+
+
+  def sendDirNavResponse(
+    dirPath: String,
+    urlPath: String,
+    fileURL: String,
+    mimeFn:  String => String = Utils.getMimeType,
+    showIndex: Boolean = true 
+  ) = {
+
+    // Secure against web server against Attacks Based On File and Path Names
+    // See: https://www.w3.org/Protocols/rfc2616/rfc2616-sec15.html
+    //
+    val fileName = Utils.decodeURL(fileURL).replace("..", "")
+    val file = new java.io.File(dirPath, fileName)
+
+    println("-----------------------------")
+    println("dirPath = " + dirPath)
+    println("urlPath = " + urlPath)
+    println("fileURL = " + fileURL)
+    println("file    = " + file)
+    println("-----------------------------")
+
+    file match {
+      case _ if !file.exists()
+          => this.send404Response(s"Error: file or directory ${file} not found.")
+
+      case _ if file.isFile()
+          =>  this.sendFileResponse(file.getAbsolutePath, mimeFn(file.getAbsolutePath))
+
+      case _ if file.isDirectory()
+          => {
+            val index = new java.io.File(file, "index.html")
+            if (showIndex && index.isFile())
+              this.sendRedirect(new java.io.File(urlPath, fileName).toString + "/" + "index.html")              
+            else            
+              this.sendDirectoryNavListResponse(
+                dirPath,
+                file.getAbsolutePath,
+                new java.io.File(urlPath, fileName).toString
+              )
+          }    
+    }
+  }
+
 
 } //----  Eof case class HttpRequest ----- //
 
@@ -179,9 +265,9 @@ class HttpServer(verbose: Boolean = false){
         if (path == "/")
           req.method == "GET" &&  req.path.startsWith("/")
         else
-          req.method == "GET" &&  req.path.startsWith(path + "/")
+          req.method == "GET" &&  req.path.startsWith(path)
       },
-      action  = (req: HttpRequest) => action(req, req.path.stripPrefix(path + "/"))
+      action  = (req: HttpRequest) => action(req, req.path.stripPrefix(path))
     )
     this.addRoute(rule)
   }
@@ -216,6 +302,21 @@ class HttpServer(verbose: Boolean = false){
   }
   
 
+  def addRouteRedirect(pred: String => Boolean, url: String) = {
+    val rule = HttpRoute(
+      matcher = (req: HttpRequest) => pred(req.path),
+      action  = (req: HttpRequest) => req.sendRedirect(url)
+    )
+    this.addRoute(rule)
+  }
+
+  def addRouteDirNav(dirPath: String, urlPath: String) = {
+    this.addRouteParamGET(urlPath){ (req: HttpRequest, fileURL: String) =>
+      println("File URL = " + fileURL)
+      req.sendDirNavResponse(dirPath, urlPath, fileURL)
+    }
+  }
+
   def addRouteDirsIndex(urlPaths: Seq[(String, String)]) = {
     val indexPage = urlPaths.foldLeft(""){ (acc, tpl) =>
       val (dirUrl, dirPath) = tpl
@@ -227,16 +328,8 @@ class HttpServer(verbose: Boolean = false){
     }
 
     urlPaths foreach { case (dirUrl, dirPath) =>
-      this.addRouteDirContents(dirUrl, dirPath)
+      this.addRouteDirNav(dirPath, dirUrl)
     }
-  }
-
-  def addRouteRedirect(pred: String => Boolean, url: String) = {
-    val rule = HttpRoute(
-      matcher = (req: HttpRequest) => pred(req.path),
-      action  = (req: HttpRequest) => req.sendRedirect(url)
-    )
-    this.addRoute(rule)
   }
 
   def addRouteDebug(path: String = "/debug") = {

@@ -98,8 +98,17 @@ case class HttpRequest(
   }
 
 
-  def sendDirFileResponse(dirpath: String, fileURL: String, mimeFn: String => String = Utils.getMimeType) = {
-    val file  = Utils.decodeURL(fileURL)
+  def sendDirFileResponse(
+    dirpath: String,
+    fileURL: String,
+    mimeFn: String => String = Utils.getMimeType
+  ) = {
+
+    // Secure against web server against Attacks Based On File and Path Names
+    // by removing (..) character and disllowing access to top directories.
+    // See: https://www.w3.org/Protocols/rfc2616/rfc2616-sec15.html
+    //
+    val file  = Utils.decodeURL(fileURL).replace("..", "")
     val fpath = new java.io.File(dirpath, file).getAbsolutePath
     this.sendFileResponse(fpath, mimeFn(file))
   }

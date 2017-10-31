@@ -179,9 +179,9 @@ class HttpServer(verbose: Boolean = false){
         if (path == "/")
           req.method == "GET" &&  req.path.startsWith("/")
         else
-          req.method == "GET" &&  req.path.startsWith(path + "/")
+          req.method == "GET" &&  req.path.startsWith(path)
       },
-      action  = (req: HttpRequest) => action(req, req.path.stripPrefix(path + "/"))
+      action  = (req: HttpRequest) => action(req, req.path.stripPrefix(path))
     )
     this.addRoute(rule)
   }

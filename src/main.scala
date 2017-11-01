@@ -5,13 +5,6 @@ import jmhttp.utils.Utils
 
 object Main{
 
-  def readFile(file: String) = {
-    val src = scala.io.Source.fromFile(file)
-    val txt = src.mkString
-    src.close()
-    txt
-  }
-
   def main(args: Array[String]){
 
     val server = new HttpServer(verbose = true)

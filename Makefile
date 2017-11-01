@@ -19,8 +19,20 @@ force: $(src)
 $(appjar): $(src)
 	fsc $(src) -d $(appjar)
 
-uber: $(appjar)
+# Make executable uber-jar not shrunk.
+sh: $(appjar)
 	jarget uber -scala -sh -m $(appjar) -o bin/jmhttp
+
+# Make executable uber-jar and shrink it with proguard.
+sh-guard: $(appjar) config.pro
+	mkdir -p bin
+	jarget uber -scala -m $(appjar) -o bin/jmhttp-uber.jar
+	@# Shrink app with proguard 
+	java -jar proguard.jar @config.pro
+	@# Make file executable 
+	java -jar ~/bin/jarget uber -exjar bin/$(app)-pro.jar bin/$(app)
+	@# Remove temporary files
+	rm -rf $(app)-uber.jar $(app)-pro.jar
 
 doc: $(src)
 	scaladoc $(src) -doc-title "jmHttp Server - Scala Micro Http Server" -doc-version "1.0" -doc-source-url "https://github.com/caiorss/jmhttp" -d ./bin/docs

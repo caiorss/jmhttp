@@ -3,6 +3,42 @@ package jmhttp.server
 import java.net.{InetAddress, ServerSocket, Socket}
 import jmhttp.utils.Utils
 
+class HttpResponse(outStream: java.io.OutputStream){
+
+  private val out = new java.io.DataOutputStream(outStream)
+  private val crlf = "\r\n"
+
+  def writeLine(line: String = "") = {
+    out.writeBytes(line + crlf)
+  }
+
+  def writeLines(lines: String*) = {
+    lines foreach this.writeLine
+  }
+
+  def writeHtmlLine(line: String = "") = {
+    out.writeBytes(line + "</br>\n" + crlf)
+  }
+
+  def writeText(text: String) = {
+    out.writeBytes(text)
+  }
+
+  def writeStream(from: java.io.InputStream, size: Int = 1024) = {
+    val to = this.out
+    // number of bytes read
+    var n = 0
+    // Buffer with 1024 bytes or 1MB
+    val buf = new Array[Byte](size)
+    while( {n = from.read(buf) ; n} > 0 ){
+      to.write(buf, 0, n)
+    }
+  }
+
+  def close() = out.close()
+
+}
+
 case class HttpRequest(
   method:    String,
   path:      String,

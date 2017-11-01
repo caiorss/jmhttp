@@ -43,6 +43,23 @@ class OptSet(
     this.add(o)
   }
 
+  def addOptionStr(
+    name:        String,
+    description: String = "description",
+    argName:     String = "arg",
+    value:       String = "",
+    shortName:   String = null,
+  ) = {
+    val o = CmdOption(
+      name,
+      shortName,
+      null,
+      description,
+      CmdValStr(value)
+    )
+    this.add(o)
+  }
+
   def getOptions() =
     options.toList
 

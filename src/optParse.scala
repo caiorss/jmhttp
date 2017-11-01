@@ -194,9 +194,9 @@ class OptSet(
             }
       })
 
-    println("operands = " + operands)
-    println("optargs  = " + optargs)
-    println("Valid options = " + validOptions)
+    // println("operands = " + operands)
+    // println("optargs  = " + optargs)
+    // println("Valid options = " + validOptions)
 
     // Check for invalid command line option 
     if ( optargs exists { case (o, v) => !validOptions.contains(o)})

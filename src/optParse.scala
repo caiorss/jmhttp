@@ -2,6 +2,7 @@ package jmhttp.optParse
 // Command line option parsing development
 //
 
+
 trait CmdVal
 case class CmdValStr  (var value: String)       extends CmdVal
 case class CmdValBool (var value: Boolean)      extends CmdVal
@@ -15,6 +16,11 @@ case class CmdOption(
   description:  String,
   value:        CmdVal 
 )
+
+
+class OptHandlingException(msg: String) extends Exception(msg) {
+}
+
 
 class OptSet(
   name: String         = "appname",
@@ -100,7 +106,7 @@ class OptSet(
     options.toList
 
   def getOpt(name: String) =
-    options
+    this.options
       .find(o => o.name == name || o.shortName == name)
       .map(_.value)
 
@@ -146,29 +152,45 @@ class OptSet(
     }
 
     val validOptions = options.map(_.name) ++ options.map(_.shortName)
-    this.operands = args filter (!_.startsWith("-"))    
-    val optargs  = args
+    this.operands = args filter (!_.startsWith("-"))
+
+    val optargs: List[(String, String)] = args
       .filter( _.startsWith("-"))
       .map( s => s.split("=", 2) match {
         case Array(o)
             => {
+
+              if (o.startsWith("--")
+                && this.options.find(x => "--" + x.name == o).isEmpty)
+                throw new OptHandlingException(s"Erro: invalid option '${o}'")
+
+              if (!o.startsWith("--") && o.startsWith("-")
+                && this.options.find(x => "-" + x.shortName == o).isEmpty)
+                throw new OptHandlingException(s"Error: invalid short option '${o}'") 
               val optName = o.stripPrefix("-").stripPrefix("-")
               (optName, "true")
             }
         case Array(o, v)
             =>  {
+              if (o.startsWith("--")
+                && this.options.find(x => "--" + x.name == o).isEmpty)
+                throw new OptHandlingException(s"Erro: invalid option '${o}'")
+
+              if (!o.startsWith("--") && o.startsWith("-")
+                && this.options.find(x => "-" + x.shortName == o).isEmpty)
+                throw new OptHandlingException(s"Error: invalid short option '${o}'")
               val optName = o.stripPrefix("-").stripPrefix("-")
               (optName, v)
             }
       })
 
-    // println("operands = " + operands)
-    // println("optargs  = " + optargs)
-    // println("Valid options = " + validOptions)
+    println("operands = " + operands)
+    println("optargs  = " + optargs)
+    println("Valid options = " + validOptions)
 
     // Check for invalid command line option 
     if ( optargs exists { case (o, v) => !validOptions.contains(o)})
-      throw new java.io.IOException("Error: invalid command line option")
+      throw new OptHandlingException("Error: invalid command line option")
 
     for (opt <- options) opt.value match {
       case CmdValStr(_)
@@ -189,10 +211,17 @@ class OptSet(
 
       case CmdValInt(_)
           =>
-        optargs
-          .find{ case (n, v) => n == opt.name || n == opt.shortName }
-          .foreach{case (n, v) =>
-            opt.value.asInstanceOf[CmdValInt].value = v.toInt
+        try {
+          optargs
+            .find{ case (n, v) => n == opt.name || n == opt.shortName }
+            .foreach{case (n, v) =>
+              opt.value.asInstanceOf[CmdValInt].value = v.toInt
+            }
+        } catch {
+          case ex: java.lang.NumberFormatException =>             
+            throw new OptHandlingException(
+              s"Error: option --${opt.name} or -${opt.shortName} expects a valid integer."
+            )
         }
 
       case CmdValList(_)

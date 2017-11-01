@@ -59,7 +59,7 @@ class OptSet(
     val o = CmdOption(
       name,
       shortName,
-      null,
+      argName,
       description,
       CmdValStr(value)
     )
@@ -76,7 +76,7 @@ class OptSet(
     val o = CmdOption(
       name,
       shortName,
-      null,
+      argName,
       description,
       CmdValInt(value)
     )
@@ -94,7 +94,7 @@ class OptSet(
     val o = CmdOption(
       name,
       shortName,
-      null,
+      argName,
       description,
       CmdValList(value)
     )

@@ -23,9 +23,10 @@ class OptHandlingException(msg: String) extends Exception(msg) {
 
 
 class OptSet(
-  name: String         = "appname",
-  description: String  = "What does this application do?",
-  operandsDesc: String = "[OPERANDS]"
+  name:         String = "appname",
+  description:  String = "What does this application do?",
+  operandsDesc: String = "[OPERANDS]",
+  version:      String = null
 ){
   import scala.collection.mutable.ListBuffer
   private val options  = ListBuffer[CmdOption]()
@@ -155,10 +156,21 @@ class OptSet(
 
   def parse(args: List[String]) = {
 
-    if (args == List("--help") || args == List("-h"))
-    {
-      this.showHelp()
-      System.exit(0)
+    args match {
+      case List("--help")  | List("-h")
+          => {
+            this.showHelp()
+            System.exit(0)
+          }
+      case List("--version")
+          =>
+        if (this.version != null) {
+          println(s"${this.name} - ${this.version}")
+          System.exit(0)
+        }
+
+      case _
+          => ()
     }
 
     val validOptions = options.map(_.name) ++ options.map(_.shortName)

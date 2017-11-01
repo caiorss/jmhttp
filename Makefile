@@ -32,7 +32,7 @@ sh-guard: $(appjar) config.pro
 	@# Make file executable 
 	java -jar ~/bin/jarget uber -exjar bin/$(app)-pro.jar bin/$(app)
 	@# Remove temporary files
-	rm -rf $(app)-uber.jar $(app)-pro.jar
+	rm -rf bin/$(app)-uber.jar bin/$(app)-pro.jar
 
 doc: $(src)
 	scaladoc $(src) -doc-title "jmHttp Server - Scala Micro Http Server" -doc-version "1.0" -doc-source-url "https://github.com/caiorss/jmhttp" -d ./bin/docs

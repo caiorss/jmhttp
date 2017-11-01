@@ -129,16 +129,26 @@ class OptSet(
     println(s"Usage: ${this.name} [OPTIONS] ... ${this.operandsDesc}")
     println(description)
     val table = options map { opt =>
-      opt match {
-        case _ if (opt.argName == null && opt.shortName == null)
-            => (s"--${opt.name}", opt.description)  
-        case _ if (opt.argName == null)
-            => (s"-${opt.shortName}, --${opt.name}", opt.description) 
-        case _ if (opt.shortName == null)
-            => (s"--${opt.name} = <${opt.argName}>", opt.description)
-        case _
-            => (s"-${opt.shortName}, --${opt.name} = <${opt.argName}>", opt.description)
-      }
+
+      //println("option = " + opt.name + " " + opt.argName)
+
+      val nameStr = "--" + opt.name
+
+      val shortNameStr =
+        if (opt.shortName != null)
+          "-" + opt.shortName + ", "
+        else
+          ""
+      val argNameStr =
+        if (opt.argName != null)
+          s"<${opt.argName}>"
+        else
+          ""
+
+      if (opt.argName != null)
+        (s"${shortNameStr}${nameStr}=${argNameStr}", opt.description)
+      else
+        (s"${shortNameStr}${nameStr}", opt.description)
     }
     this.printTupleAsTable(table, margin = 2)
   }

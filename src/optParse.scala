@@ -130,9 +130,7 @@ class OptSet(
     println(s"Usage: ${this.name} [OPTIONS] ... ${this.operandsDesc}")
     println(description)
     val table = options map { opt =>
-
       //println("option = " + opt.name + " " + opt.argName)
-
       val nameStr = "--" + opt.name
 
       val shortNameStr =
@@ -151,7 +149,13 @@ class OptSet(
       else
         (s"${shortNameStr}${nameStr}", opt.description)
     }
-    this.printTupleAsTable(table, margin = 2)
+
+    val tablet = List(
+      ("-h, --help", "Display this help and exit"),      
+      ("--version",  "Output version information and exit."),
+    )
+
+    this.printTupleAsTable(tablet ++ table, margin = 2)
   }
 
   def parse(args: List[String]) = {

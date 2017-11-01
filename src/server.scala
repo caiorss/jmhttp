@@ -56,44 +56,99 @@ case class HttpRequest(
   def print() =
     println(s"\n${new java.util.Date()} - path = ${this.path} - method = ${this.method} - address = ${this.address}")
 
-  /** Send response with http request parameters for debugging. */
-  def sendDebugResponse() {
-    val crlf = "\r\n"
-    val out = new java.io.DataOutputStream(outStream)
-    out.writeBytes(s"${httpVersion} 200 OK" + crlf)
-    out.writeBytes(crlf)
-    out.writeBytes("Method =  " + method  + crlf)
-    out.writeBytes("Path   =  " + path    + crlf)
-    out.writeBytes(crlf)
-    out.writeBytes("headers = " + crlf)
+  def withResponse(
+    status:    Int          = 200,
+    statusMsg: String       = "OK",
+    mimeType:  String       = "text/html",
+    headers:   HttpHeaders  = Map[String, String]()
+  )(fn: HttpResponse => Unit) = {
+    val resp = new HttpResponse(this.outStream)
+
+    // Write response line 
+    resp.writeLine(s"${httpVersion} ${status} ${statusMsg}")
+
+    // Write HTTP Headers 
+    //-------------------------   
+    resp.writeLine("Content-Type:   " + mimeType)
     headers foreach { case (k, v) =>
-      out.writeBytes(s"${k}\t=\t${v}" + crlf)
+      resp.writeLine(s"${k}: ${v}")
     }
-    out.close()
+
+    // Empty line separating response line and header from body 
+    resp.writeLine()
+
+    fn(resp)
+    resp.close()
   }
 
-  def sendTextResponse(text: String, status: Int = 200, statusMsg: String = "Ok", headers: HttpHeaders = Map[String, String]()) = {
-    val crlf = "\r\n"
-    val out = new java.io.DataOutputStream(outStream)
-    out.writeBytes(s"${httpVersion} ${status} ${statusMsg}" + crlf)
+  def withResponseLen(
+    status:    Int          = 200,
+    statusMsg: String       = "OK",
+    mimeType:  String       = "text/html",
+    headers:   HttpHeaders  = Map[String, String](),
+    contentLen: Long         = -1,
+  )(fn: HttpResponse => Unit) = {
+    val resp = new HttpResponse(this.outStream)
+    // Write response line 
+    resp.writeLine(s"${httpVersion} ${status} ${statusMsg}")
+    // Write HTTP Headers 
+    //-------------------------   
+    resp.writeLine("Content-Type:   " + mimeType)
+    if (contentLen > 0)
+      resp.writeLine("Content-Length: " + contentLen)
+
     headers foreach { case (k, v) =>
-      out.writeBytes(s"${k}: ${v}" + crlf)
+      println("Written header - " + s"${k}: ${v}")
+      resp.writeLine(s"${k}: ${v}")
     }
-    out.writeBytes(crlf)
-    text.lines.foreach{ lin =>
-      out.writeBytes(lin + crlf)
+    // Empty line separating response line and header from body 
+    resp.writeLine()   
+    fn(resp)
+    resp.close()
+  }
+
+    
+
+  /** Send response with http request parameters for debugging. */
+  def sendDebugResponse() =
+    withResponse(mimeType = "text/plain"){ resp =>
+      resp.writeLine("Method =  " + method)
+      resp.writeLine("Path   =  " + path)
+      resp.writeLine()
+      resp.writeLine("headers = ")
+      headers foreach { case (k, v) =>
+        resp.writeLine(s"${k}\t=\t${v}")
+      }
     }
-    out.close()
-  } // --- EoF sendTexResponse ---- //
+  
 
+  def sendTextResponse(
+    text: String,
+    status: Int = 200,
+    statusMsg: String = "Ok",
+    mimeType: String = "text/plain",
+    headers: HttpHeaders = Map[String, String]()
+  ) = withResponseLen(
+    status = status,
+    statusMsg = statusMsg,
+    mimeType = mimeType,
+    contentLen = text.getBytes("UTF-8").length,
+    headers = headers,
+  ) { req =>
+    req.writeText(text)
+  }
 
-
-  def send404Response(text: String, headers: HttpHeaders = Map[String, String]()) = {
-    this.sendTextResponse(text, 404, "NOT FOUND", headers)
+  def send404Response(text: String) = {
+    this.sendTextResponse(text, 404, "NOT FOUND")
   }
 
   def sendRedirect(url: String) =
-    this.sendTextResponse("", 302, "MOVED PERMANENTLY", Map("Location" -> url))
+    this.sendTextResponse(
+      "Moved to " + url,
+      302,
+      "MOVED PERMANENTLY",
+      headers = Map("Location" -> url)
+    )
 
 
   def sendFileResponse(
@@ -101,32 +156,16 @@ case class HttpRequest(
     mimeType: String      = "application/octet-stream",
     headers:  HttpHeaders = Map[String, String]()
   ) = {
-
-    def copyStream(from: java.io.InputStream, to: java.io.OutputStream){
-      // number of bytes read
-      var n = 0
-      // Buffer with 1024 bytes or 1MB
-      val buf = new Array[Byte](1024)
-      while( {n = from.read(buf) ; n} > 0 ){
-        to.write(buf, 0, n)
-      }
-    }
-
     try {
       val inp = new java.io.FileInputStream(file)
-      val crlf = "\r\n"
-      val out = new java.io.DataOutputStream(outStream)
       val fileSize = new java.io.File(file).length()
-      out.writeBytes(s"${httpVersion} 200 OK" + crlf)
-      out.writeBytes("Content-Type: " + mimeType + crlf)
-      out.writeBytes("Content-Length: " + fileSize + crlf)
-      headers foreach { case (k, v) =>
-        out.writeBytes(s"${k}: ${v}" + crlf)
-      }
-      out.writeBytes(crlf)
-      copyStream(inp, out)
-      inp.close()
-      out.close()
+      withResponseLen(
+        mimeType   = mimeType,
+        contentLen = fileSize,
+      ){ resp =>
+        resp.writeStream(inp)
+        inp.close()
+      }     
     } catch {
       case ex: java.io.FileNotFoundException
           => this.send404Response("Error: file not found in the server.")
@@ -141,37 +180,26 @@ case class HttpRequest(
       val p  = Paths.get(path)
       rp.relativize(p).toString
     }
-    val crlf = "\r\n"
-    val out = new java.io.DataOutputStream(outStream)
-    out.writeBytes(s"${httpVersion} 200 OK"  + crlf)
-    out.writeBytes("Content-type: text/html" + crlf)
-    out.writeBytes(crlf)
-
     val contents = new java.io.File(dirPath).listFiles
     val files = contents.filter(_.isFile).map(_.getName)
     val dirs  = contents.filter(_.isDirectory).map(_.getName)
-
-    out.writeBytes(s"<h1>Contents of ${urlPath}/${relativePath(rootPath, dirPath)}</h1>" + crlf)
-
-    out.writeBytes("<h2>Directories</h2>" + crlf)
-
-    dirs foreach { dir =>
-      if (urlPath == "/")
-        out.writeBytes(s"<a href='/${dir}'>${dir}</a></br></br>" + crlf)
-      else
-        out.writeBytes(s"<a href='${urlPath}/${dir}'>${dir}</a></br></br>" + crlf)
+    withResponseLen(){ resp =>
+      resp.writeLine(s"<h1>Contents of ${urlPath}/${relativePath(rootPath, dirPath)}</h1>")
+      resp.writeLine("<h2>Directories</h2>")
+      dirs foreach { dir =>
+        if (urlPath == "/")
+          resp.writeLine(s"<a href='/${dir}'>${dir}</a></br></br>")
+        else
+          resp.writeLine(s"<a href='${urlPath}/${dir}'>${dir}</a></br></br>")
+      }
+      resp.writeLine("<h2>Files</h2>")
+      files foreach { file =>
+        if (urlPath == "/")
+          resp.writeLine(s"<a href='/${file}'>${file}</a></br></br>")
+        else
+          resp.writeLine(s"<a href='${urlPath}/${file}'>${file}</a></br></br>")
+      }
     }
-
-    out.writeBytes("<h2>Files</h2>" + crlf)
-
-    files foreach { file =>
-      if (urlPath == "/")
-        out.writeBytes(s"<a href='/${file}'>${file}</a></br></br>" + crlf)
-      else
-        out.writeBytes(s"<a href='${urlPath}/${file}'>${file}</a></br></br>" + crlf)
-    }
-
-    out.close()
   }
 
 
@@ -189,16 +217,16 @@ case class HttpRequest(
     val fileName = Utils.decodeURL(fileURL).replace("..", "")
     val file = new java.io.File(dirPath, fileName)
 
-    println("-----------------------------")
-    println("dirPath = " + dirPath)
-    println("urlPath = " + urlPath)
-    println("fileURL = " + fileURL)
-    println("file    = " + file)
-    println("-----------------------------")
+    // println("-----------------------------")
+    // println("dirPath = " + dirPath)
+    // println("urlPath = " + urlPath)
+    // println("fileURL = " + fileURL)
+    // println("file    = " + file)
+    // println("-----------------------------")
 
     file match {
       case _ if !file.exists()
-          => this.send404Response(s"Error: file or directory ${file} not found.")
+          => this.send404Response(s"Error: file or directory ${fileURL} not found.")
 
       case _ if file.isFile()
           =>  this.sendFileResponse(file.getAbsolutePath, mimeFn(file.getAbsolutePath))
@@ -280,7 +308,7 @@ class HttpServer(verbose: Boolean = false){
 
     this.addRoutePathGET("/"){
       val pageHeader = "<h1>Shared Directories</h1></br>\n"
-      _.sendTextResponse(pageHeader + indexPage, headers = Map("Content-Type" -> "text/html"))
+      _.sendTextResponse(pageHeader + indexPage, mimeType = "text/html")
     }
 
     urlPaths foreach { case (dirUrl, dirPath) =>

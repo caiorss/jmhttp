@@ -60,6 +60,24 @@ class OptSet(
     this.add(o)
   }
 
+  def addOptionInt(
+    name:        String,
+    description: String = "description",
+    argName:     String = "arg",
+    value:       Int    = 0,
+    shortName:   String = null,
+  ) = {
+    val o = CmdOption(
+      name,
+      shortName,
+      null,
+      description,
+      CmdValInt(value)
+    )
+    this.add(o)
+  }
+
+
   def addOptionList(
     name:        String,
     description: String = "description",

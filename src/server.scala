@@ -236,13 +236,15 @@ class HttpServer(verbose: Boolean = false){
   }
 
   def addRouteDirsIndex(urlPaths: Seq[(String, String)]) = {
+
     val indexPage = urlPaths.foldLeft(""){ (acc, tpl) =>
       val (dirUrl, dirPath) = tpl
       acc + "\n" + s"Directory: <a href='${dirUrl}'>${dirUrl}</a></br></br>"
     }
 
     this.addRoutePathGET("/"){
-      _.sendTextResponse(indexPage, headers = Map("Content-Type" -> "text/html"))
+      val pageHeader = "<h1>Shared Directories</h1></br>\n"
+      _.sendTextResponse(pageHeader + indexPage, headers = Map("Content-Type" -> "text/html"))
     }
 
     urlPaths foreach { case (dirUrl, dirPath) =>

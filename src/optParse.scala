@@ -230,7 +230,7 @@ class OptSet(
         } catch {
           case ex: java.lang.NumberFormatException =>             
             throw new OptHandlingException(
-              s"Error: option --${opt.name} or -${opt.shortName} expects a valid integer."
+              s"Error: option --${opt.name} or -${opt.shortName} expects an integer."
             )
         }
 

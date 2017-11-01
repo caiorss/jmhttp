@@ -1,8 +1,14 @@
 
 #====== U S E R - S E T T I N G S =========;;
 
-src  := $(wildcard src/*.scala)
-app  := jmhttp
+# Source code 
+src         := $(wildcard src/*.scala)
+
+# Application name without file extension 
+app         := jmhttp
+
+# Installation directory 
+installdir  := ~/bin
 
 # ===== S E T T I N G S =====================;;
 
@@ -40,3 +46,13 @@ doc: $(src)
 
 test: $(appjar)
 	scala $(appjar) --dirlist image:/home/archbox/Pictures music:/home/archbox/Music wiki:/home/archbox/Documents/wiki
+
+
+# Requires the rule $ make sh or $ make sh-guard to be run before.
+install:
+	@echo "Installing application "
+	cp -v bin/jmhttp $(installdir)
+
+uninstall:
+	@echo "Uninstalling application"
+	rm -v  $(installdir)/$(app)

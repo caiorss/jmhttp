@@ -115,7 +115,7 @@ case class HttpRequest(
     val files = contents.filter(_.isFile).map(_.getName)
     val dirs  = contents.filter(_.isDirectory).map(_.getName)
 
-    out.writeBytes(s"<h1>Directory Contents of /${relativePath(rootPath, dirPath)}</h1>" + crlf)
+    out.writeBytes(s"<h1>Contents of ${urlPath}/${relativePath(rootPath, dirPath)}</h1>" + crlf)
 
     out.writeBytes("<h2>Directories</h2>" + crlf)
 

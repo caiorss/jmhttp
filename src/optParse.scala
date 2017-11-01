@@ -8,7 +8,6 @@ case class CmdValBool (var value: Boolean)      extends CmdVal
 case class CmdValInt  (var value: Int)          extends CmdVal
 case class CmdValList (var value: List[String]) extends CmdVal
 
-
 case class CmdOption(
   name:         String,
   shortName:    String,
@@ -28,6 +27,21 @@ class OptSet(
 
   def add(opt: CmdOption) =
     options.append(opt)
+
+  def addOptionFlag(
+    name:         String,
+    description:  String,
+    shortName:    String = null
+  ) = {
+    val o = CmdOption(
+      name,
+      shortName,
+      null,
+      description,
+      CmdValBool(false)
+    )
+    this.add(o)
+  }
 
   def getOptions() =
     options.toList

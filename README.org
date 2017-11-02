@@ -1,33 +1,137 @@
 #+TITLE: jmHttp Server 
+#+AUTHOR:  Caio Rodrigues
 #+DESCRIPTION: A portable http server for distributing file on Local Network 
+#+KEYWRODS: http, web, server, share, files, lan, local, network, java, scala, cross platform
 #+STARTUP: content 
+
 
 * jmtthp server - A micro scala/java Http server 
 ** Overview 
 
-jmhttp server - is a micro self-contained http server to serve and share static
-files across local netork. 
+_jmhttp server_ - is a micro self-contained lightweight http server to
+share files across local netork. It is useful to access shared files,
+musics, pictures and directories from other computers, smartphones,
+tablets and so on. This app can also serve static files at local
+network· 
 
-Objectives:
+Features: 
 
- - Make a small proof-of-concept web server in Scala to serve files
-   accross local network.
+ - _Self contained_: Just-one jar file, intuitive and easy to use.
 
- - The server must be easy to use and require few configuration.
+ - _No instalation required+_, it is ready to use and ready to go.
 
- - 
+ - _Cross-platform_, as it runs on top of the Java Platform. So this
+   server can be run without recompiling and reinstalling on Linux,
+   Mac OSX, BSD or Windows.
 
-** Tasklist 
+ - _Simple configuration_ 
 
- - [ ] - Implement a consistent command line handling.
 
- - [ ] - _Maybe_: Implement a Java Swing GUI to make easier to users
-   start, stop and control the server.
+*WARNING*: This server doesn't use SSL/TLS security extension for
+end-to-end encryption and data integrity and doesn't have
+authentication too. So it should not be used to share sensitive files
+on insecure or public local networks.
 
- - [ ] - Add basic HTTP authentication.
+** Usage 
+*** Show help
+
+The Jmhttp server is self-explanatory:
+
+#+BEGIN_SRC text 
+$ jmhttp 
+Usage: jmhttp [OPTIONS] ... [[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]
+A micro Java/Scala http server to share files in the local network
+                       
+   -h, --help          Display this help and exit
+   --version           Output version information and exit.
+   -p, --port=<port>   Port number that the Http server will listen to. Default 8080
+   --host=<hostname>   Host name that the server listens to. Default value 0.0.0.0
+   --verbose           Increase server logging verbosity.
+   -b, --browser       Open server url in default web browser.
+   -m, --multiple      Share multiple directories specified by url1:/dir1, url2:/dir2 ...
+
+
+#+END_SRC
+*** Running the server 
+
+By default, the server binds to port 8080. To change it to another port
+run with -p=<port number>, for instance, -p=9090 to bind to port 9090.
+
+*Example 1*
+
+Share the directory /home/archbox/test to ~/test binding
+the server to port 8080. The shared directory can accessed at
+http://192.168.1.22:8080 URL.
+
+#+BEGIN_SRC sh 
+$ jmhttp /home/archbox/test/
+Server running at: http://192.168.1.22:8080
+
+#+END_SRC
+
+On windows this sever can be run with: 
+
+#+BEGIN_SRC sh 
+$ java -jar jmhttp /home/archbox/test 
+Server running at: http://192.168.1.22:8080
+#+END_SRC
+
+*Example 2*
+
+Changing the port that server listen run:
+
+#+BEGIN_SRC sh 
+$ jmhttp -p=9090 /home/archbox/test/
+Server running at: http://192.168.1.22:9090
+#+END_SRC
+
+*Example 3*
+
+Open the server website in the browser:
+
+#+BEGIN_SRC sh 
+$ jmhttp --browser -p=9090 /home/archbox/test/
+Server running at: http://192.168.1.22:9090
+
+# Or 
+
+$ jmhttp --b -p=9090 /home/archbox/test/
+Server running at: http://192.168.1.22:9090
+
+#+END_SRC
+
+*Example 4*
+
+Sharing multiple directories: 
+
+It will make the directory contents of /home/archbox/opt be available
+at the URL  http://192.168.1.22:8080/opt and the directory contents of
+/home/archbox/Documents/wiki  be available at http://192.168.1.22:8080/org. 
+If there is any file named index.html in the wiki directory, it will
+be displayed instead of showing the directory contents.
+
+#+BEGIN_SRC sh 
+$ bin/jmhttp -m -b opt:/home/archbox/opt pics:/home/archbox/Pictures org:/home/archbox/Documents/wiki 
+Server running at: http://192.168.1.22:8080
+
+#+END_SRC
+
+** Building Instructions 
+
+The server requires scala as building dependency and jarget building
+tool to bundle the package.
+
+** Tasklist and future work 
 
  - [ ] - Implement logging
 
- - [ ] - Make server configuration customizeable
+ - [X] - Implement a consistent command line handling.
 
- - [ ] - 
+ - [ ] - Add basic HTTP authentication.
+
+ - [ ] - Add cookie-based authentication.
+
+ - [ ] - Supoport HTTPS/TLS security extension.
+
+ - [ ] - Provide GIT-like subcommands.
+

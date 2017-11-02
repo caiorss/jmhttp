@@ -1,6 +1,6 @@
 #+TITLE: jmHttp Server 
 #+AUTHOR:  Caio Rodrigues
-#+DESCRIPTION: A portable http server for distributing file on Local Network 
+#+DESCRIPTION: A portable cross-platform http web server for sharing file and directories on Local Network.
 #+KEYWRODS: http, web, server, share, files, lan, local, network, java, scala, cross platform
 #+STARTUP: content 
 

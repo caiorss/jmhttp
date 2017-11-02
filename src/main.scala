@@ -46,6 +46,7 @@ object Main{
 
     parser.addOptionFlag(
       name       = "browser",
+      shortName  = "b",
       description = "Open server url in default web browser."
     )
 
@@ -82,17 +83,26 @@ object Main{
           }
     }
 
+    val serverURL =
+      Utils.getLocalAddress()
+        .map{ addr => s"http://${addr}:${port}"}
+
+
+    serverURL match {
+      case Some(url)
+          => println("Server running at: " + url)
+      case None
+          => println("Server address in local network not found")
+    }
+
     // Open website in the browser 500 ms delay after the server
     // start.
     //
     if (browserOpt)
       Utils.runDealy(500){
-        Utils
-          .getLocalAddress()
-          .foreach { url =>
-          Utils.openUrl("http://" + url + ":" + port)
-        }
+        serverURL foreach Utils.openUrl
       }
+  
 
     server.run(port = port, host = host)
 

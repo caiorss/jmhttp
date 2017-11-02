@@ -6,6 +6,16 @@ import jmhttp.optParse.OptSet
 
 object Main{
 
+  def exitIfFalse(cond: Boolean, msg: String, exitCode: Int = 1) =
+    if(cond) {
+      println(msg)
+      System.exit(exitCode)
+    }
+
+  def dirExists(file: String) =
+    new java.io.File(file).isDirectory()
+  
+
   def parseOperand(oper: String) =
     oper.split(":", 2) match {
       case Array(k, v)
@@ -20,7 +30,7 @@ object Main{
       name         = "jmhttp",
       version      = "v1.0",
       description  = "A micro Java/Scala http server to share files in the local network",
-      operandsDesc = "URL:DIRECTORY [URL:DIRECTORY] ..."
+      operandsDesc = "[[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]"
     )
 
     parser.addOptionInt(
@@ -50,6 +60,11 @@ object Main{
       description = "Open server url in default web browser."
     )
 
+    parser.addOptionFlag(
+      name = "multiple",
+      shortName = "m",
+      description = "Share multiple directories specified by url1:/dir1, url2:/dir2 ...")
+
     try parser.parse(args.toList)
     catch {
       case ex: jmhttp.optParse.OptHandlingException
@@ -63,6 +78,7 @@ object Main{
     val host       = parser.getOptAsStr("host")
     val verbosity  = parser.getOptAsBool("verbose")
     val browserOpt = parser.getOptAsBool("browser")
+    val multiple   = parser.getOptAsBool("multiple")
 
     if (parser.getOperands().isEmpty)
     {
@@ -74,14 +90,22 @@ object Main{
 
     server.addRouteDebug("/echo")
 
-    try server.addRouteDirsIndex(parser.getOperands() map parseOperand)
-    catch {
-      case ex: java.lang.IllegalArgumentException
-          =>{
-            println(ex.getMessage())
-            System.exit(0)
-          }
+    if (!multiple){
+      val operands = parser.getOperands()
+      val path     = operands.head
+      exitIfFalse(operands.size > 1,  "Error: this mode expects only one operand.")
+      exitIfFalse(!dirExists(path),  s"Error: directory ${path} doesn't exist.")
+      server.addRouteDirNav(parser.getOperands().head, "/")
     }
+    else
+      try server.addRouteDirsIndex(parser.getOperands() map parseOperand)
+      catch {
+        case ex: java.lang.IllegalArgumentException
+            =>{
+              println(ex.getMessage())
+              System.exit(0)
+            }
+      }
 
     val serverURL =
       Utils.getLocalAddress()
@@ -92,7 +116,7 @@ object Main{
       case Some(url)
           => println("Server running at: " + url)
       case None
-          => println("Server address in local network not found")
+          => println("Error: Server address in local network not found")
     }
 
     // Open website in the browser 500 ms delay after the server

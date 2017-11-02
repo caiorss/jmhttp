@@ -44,8 +44,11 @@ doc: $(src)
 	scaladoc $(src) -doc-title "jmHttp Server - Scala Micro Http Server" -doc-version "1.0" -doc-source-url "https://github.com/caiorss/jmhttp" -d ./bin/docs
 
 
-test: $(appjar)
-	scala $(appjar) -p=8000 image:/home/archbox/Pictures music:/home/archbox/Music wiki:/home/archbox/Documents/wiki
+test1: $(appjar)
+	scala $(appjar) -p=9090 /home/archbox/Pictures
+
+test2: $(appjar)
+	scala $(appjar)  --multiple -p=8000 image:/home/archbox/Pictures music:/home/archbox/Music wiki:/home/archbox/Documents/wiki
 
 
 # Requires the rule $ make sh or $ make sh-guard to be run before.

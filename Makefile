@@ -45,7 +45,7 @@ doc: $(src)
 
 
 test: $(appjar)
-	scala $(appjar) -p=8000 --browser image:/home/archbox/Pictures music:/home/archbox/Music wiki:/home/archbox/Documents/wiki
+	scala $(appjar) -p=8000 image:/home/archbox/Pictures music:/home/archbox/Music wiki:/home/archbox/Documents/wiki
 
 
 # Requires the rule $ make sh or $ make sh-guard to be run before.

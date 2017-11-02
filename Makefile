@@ -39,6 +39,8 @@ sh-guard: $(appjar) config.pro
 	java -jar ~/bin/jarget uber -exjar bin/$(app)-pro.jar bin/$(app)
 	@# Remove temporary files
 	rm -rf bin/$(app)-uber.jar bin/$(app)-pro.jar
+	@# Generate sha256 hash for application data integrity checking.
+	cd bin && sha256sum $(app) > $(app).sha256
 
 doc: $(src)
 	scaladoc $(src) -doc-title "jmHttp Server - Scala Micro Http Server" -doc-version "1.0" -doc-source-url "https://github.com/caiorss/jmhttp" -d ./bin/docs

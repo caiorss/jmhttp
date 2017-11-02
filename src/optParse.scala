@@ -127,8 +127,9 @@ class OptSet(
     operands
 
   def showHelp() = {
+    println(this.description)
+    println()
     println(s"Usage: ${this.name} [OPTIONS] ... ${this.operandsDesc}")
-    println(description)
     val table = options map { opt =>
       //println("option = " + opt.name + " " + opt.argName)
       val nameStr = "--" + opt.name

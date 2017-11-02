@@ -155,7 +155,7 @@ class OptSet(
       ("--version",  "Output version information and exit."),
     )
 
-    this.printTupleAsTable(tablet ++ table, margin = 2)
+    this.printTupleAsTable(tablet ++ table, margin = 2, sep = 2)
   }
 
   def parse(args: List[String]) = {

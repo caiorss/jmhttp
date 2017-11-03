@@ -108,12 +108,39 @@ object Main{
     val logger = Logger.getLogger("jmhttp")
     logger.setUseParentHandlers(false)
     val handler = new ConsoleHandler()
-    handler.setLevel(LogLevel.ALL)
+    
     logger.addHandler(handler)
-    logger.setLevel(LogLevel.ALL)
 
-    val fhandler = new FileHandler("jmhttp.log")
-    logger.addHandler(fhandler)
+    logLevel match {
+
+      case "OFF" => {
+        handler.setLevel(LogLevel.OFF)
+        logger.setLevel(LogLevel.OFF)
+      }
+
+      case "ALL" => {
+        handler.setLevel(LogLevel.ALL)
+        logger.setLevel(LogLevel.ALL)
+      }
+
+      case "INFO" => {
+        handler.setLevel(LogLevel.INFO)
+        logger.setLevel(LogLevel.INFO)
+      }
+
+      case "FINE" => {
+        handler.setLevel(LogLevel.INFO)
+        logger.setLevel(LogLevel.INFO)
+      }
+
+      case _ => {
+        println("Error: invalid log setting")
+        System.exit(1)
+      }
+    }
+
+    // val fhandler = new FileHandler("jmhttp.log")
+    // logger.addHandler(fhandler)
 
 
     val server = new HttpServer(verbose = verbosity, logger)

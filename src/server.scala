@@ -49,12 +49,14 @@ case class HttpRequest(
   outStream: java.io.OutputStream
 ) {
 
+
+
   val httpVersion = "HTTP/1.0"
 
   type HttpHeaders = Map[String, String]
 
-  def print() =
-    println(s"\n${new java.util.Date()} - path = ${this.path} - method = ${this.method} - address = ${this.address}")
+  override def toString() =
+    s"HTTP Request: path = ${this.path} - method = ${this.method} - address = ${this.address}"
 
   def withResponse(
     status:    Int          = 200,

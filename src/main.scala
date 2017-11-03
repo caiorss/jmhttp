@@ -65,6 +65,14 @@ object Main{
       shortName = "m",
       description = "Share multiple directories specified by url1:/dir1, url2:/dir2 ...")
 
+    parser.addOptionStr(
+      name       = "loglevel",
+      shortName  = null,
+      argName    = "level",
+      value      = "INFO",
+      description = "Set application log level. [OFF | ALL | FINE | INFO. (Default value INFO)"
+    )
+
     try parser.parse(args.toList)
     catch {
       case ex: jmhttp.optParse.OptHandlingException
@@ -79,6 +87,7 @@ object Main{
     val verbosity  = parser.getOptAsBool("verbose")
     val browserOpt = parser.getOptAsBool("browser")
     val multiple   = parser.getOptAsBool("multiple")
+    val logLevel   = parser.getOptAsStr("loglevel")
 
     if (parser.getOperands().isEmpty)
     {
@@ -86,7 +95,55 @@ object Main{
       System.exit(0)
     }
 
-    val server = new HttpServer(verbose = verbosity)
+    import java.util.logging.{
+      Logger, Level => LogLevel,
+      ConsoleHandler, LogManager, FileHandler 
+    }
+
+    // Set the logging format 
+    System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n")
+    
+
+    //val formatter  = new java.util.logging.SimpleFormatter()
+    val logger = Logger.getLogger("jmhttp")
+    logger.setUseParentHandlers(false)
+    val handler = new ConsoleHandler()
+    
+    logger.addHandler(handler)
+
+    logLevel match {
+
+      case "OFF" => {
+        handler.setLevel(LogLevel.OFF)
+        logger.setLevel(LogLevel.OFF)
+      }
+
+      case "ALL" => {
+        handler.setLevel(LogLevel.ALL)
+        logger.setLevel(LogLevel.ALL)
+      }
+
+      case "INFO" => {
+        handler.setLevel(LogLevel.INFO)
+        logger.setLevel(LogLevel.INFO)
+      }
+
+      case "FINE" => {
+        handler.setLevel(LogLevel.INFO)
+        logger.setLevel(LogLevel.INFO)
+      }
+
+      case _ => {
+        println("Error: invalid log setting")
+        System.exit(1)
+      }
+    }
+
+    // val fhandler = new FileHandler("jmhttp.log")
+    // logger.addHandler(fhandler)
+
+
+    val server = new HttpServer(verbose = verbosity, logger)
 
     server.addRouteDebug("/echo")
 

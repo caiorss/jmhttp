@@ -49,12 +49,14 @@ case class HttpRequest(
   outStream: java.io.OutputStream
 ) {
 
+ 
+
   val httpVersion = "HTTP/1.0"
 
   type HttpHeaders = Map[String, String]
 
-  def print() =
-    println(s"\n${new java.util.Date()} - path = ${this.path} - method = ${this.method} - address = ${this.address}")
+  override def toString() =
+    s"HTTP Request: path = ${this.path} - method = ${this.method} - address = ${this.address}"
 
   def withResponse(
     status:    Int          = 200,
@@ -98,7 +100,7 @@ case class HttpRequest(
       resp.writeLine("Content-Length: " + contentLen)
 
     headers foreach { case (k, v) =>
-      println("Written header - " + s"${k}: ${v}")
+      // println("Written header - " + s"${k}: ${v}")
       resp.writeLine(s"${k}: ${v}")
     }
     // Empty line separating response line and header from body 
@@ -255,11 +257,17 @@ case class HttpRoute(
   val action:  HttpRequest => Unit
 )
 
-class HttpServer(verbose: Boolean = false){
+class HttpServer(verbose: Boolean = false, logger: java.util.logging.Logger){
+
   import scala.collection.mutable.ListBuffer
 
   private val ssock  = new ServerSocket()
   private val routes = ListBuffer[HttpRoute]()
+
+  init()
+
+  private def init(){    
+  }
 
 
   def addRoute(route: HttpRoute) =
@@ -294,7 +302,7 @@ class HttpServer(verbose: Boolean = false){
 
   def addRouteDirNav(dirPath: String, urlPath: String) = {
     this.addRouteParamGET(urlPath){ (req: HttpRequest, fileURL: String) =>
-      println("File URL = " + fileURL)
+      // println("File URL = " + fileURL)
       req.sendDirNavResponse(dirPath, urlPath, fileURL)
     }
   }
@@ -331,20 +339,17 @@ class HttpServer(verbose: Boolean = false){
 
     //val client: Socket = ssock.accept()
 
-    println("Accepted client " + client)
+    logger.fine("Get client socket " + client)
 
     def getHeaders(sc: java.util.Scanner) = {
       var headers = Map[String, String]()
 
       var line: String = ""
 
-      println("Getting headers")
+      logger.fine("Parsing client headers")
 
       while({line = sc.nextLine(); line} != ""){
-
-        println("Header Line = " + line)
-
-        if (verbose) println("Htp header = " + line)
+        //logger.fine("Request header line = " + line)      
 
         line.split(":\\s+", 2) match {
           case Array(key, value)
@@ -361,15 +366,14 @@ class HttpServer(verbose: Boolean = false){
     val sc = new java.util.Scanner(client.getInputStream())
 
     if (!sc.hasNextLine()){
-      println("Error: Invalid http request. Client closed")
+      logger.fine("Ignoring empty line request. Client closed.")
       None
     }
     else {
 
-      println("Reading request line")
+      logger.finer("Reading request line")
       val reqline = sc.nextLine()
-
-      println("Request line = " + reqline)
+      logger.fine("Request line = " + reqline)
 
       val Array(httpMethod, urlPath, httpVersion) = reqline.split(" ")
       val headers = getHeaders(sc)
@@ -396,35 +400,25 @@ class HttpServer(verbose: Boolean = false){
     }
   }
 
-  /** Run server in synchronous way, without threading. */
-  def runSync(port: Int = 8080, host: String = "0.0.0.0") = {
-    ssock.bind(new java.net.InetSocketAddress(host, port), 60)
-    while (true) try {
-      if (verbose) println("Server: waiting for client connection.")
-      val client = this.ssock.accept()
-      this.parseRequest(client) foreach { req =>
-        if (verbose) println("Server: client has connected")
-        this.serveRequest(req)
-      }
-    } catch {
-      case ex: Throwable => ex.printStackTrace()
-    }
-  }
 
   /** Run server in async way with threading. */
   def run(port: Int = 8080, host: String = "0.0.0.0", timeout: Int = 2000) = {
     ssock.bind(new java.net.InetSocketAddress(host, port), 60)
+
+
+    logger.info(s"Starting server at host = ${host} and port = ${port}")
+
     // ssock.setSoTimeout(timeout)
     while (true) try {
-      if (verbose) println(s"${new java.util.Date()} - server waiting for connection.")
+      logger.fine(s"Server waiting for connection.")
 
       val client = this.ssock.accept()
 
       Utils.withThread{
         this.parseRequest(client) foreach { req =>
-          if (verbose) req.print()          
+          logger.info(req.toString())
           this.serveRequest(req)
-          println("Client request served")
+          logger.fine("Client request served")
         }
       }
     } catch {

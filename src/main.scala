@@ -86,7 +86,28 @@ object Main{
       System.exit(0)
     }
 
-    val server = new HttpServer(verbose = verbosity)
+    import java.util.logging.{
+      Logger, Level => LogLevel,
+      ConsoleHandler, LogManager, FileHandler 
+    }
+
+    // Set the logging format 
+    System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tF %1$tT] [%4$-7s] %5$s %n")
+    
+
+    //val formatter  = new java.util.logging.SimpleFormatter()
+    val logger = Logger.getLogger("jmhttp")
+    logger.setUseParentHandlers(false)
+    val handler = new ConsoleHandler()
+    handler.setLevel(LogLevel.ALL)
+    logger.addHandler(handler)
+    logger.setLevel(LogLevel.ALL)
+
+    val fhandler = new FileHandler("jmhttp.log")
+    logger.addHandler(fhandler)
+
+
+    val server = new HttpServer(verbose = verbosity, logger)
 
     server.addRouteDebug("/echo")
 

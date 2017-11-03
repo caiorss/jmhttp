@@ -65,6 +65,14 @@ object Main{
       shortName = "m",
       description = "Share multiple directories specified by url1:/dir1, url2:/dir2 ...")
 
+    parser.addOptionStr(
+      name       = "loglevel",
+      shortName  = null,
+      argName    = "level",
+      value      = "INFO",
+      description = "Set application log level. [OFF | ALL | FINE | INFO. (Default value INFO)"
+    )
+
     try parser.parse(args.toList)
     catch {
       case ex: jmhttp.optParse.OptHandlingException
@@ -79,6 +87,7 @@ object Main{
     val verbosity  = parser.getOptAsBool("verbose")
     val browserOpt = parser.getOptAsBool("browser")
     val multiple   = parser.getOptAsBool("multiple")
+    val logLevel   = parser.getOptAsStr("loglevel")
 
     if (parser.getOperands().isEmpty)
     {

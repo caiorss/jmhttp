@@ -47,10 +47,10 @@ doc: $(src)
 
 
 test1: $(appjar)
-	scala $(appjar) -p=9090 /home/archbox/Pictures
+	scala $(appjar) --loglevel=INFO -p=9090 /home/archbox/Pictures
 
 test2: $(appjar)
-	scala $(appjar)  --multiple -p=8000 image:/home/archbox/Pictures music:/home/archbox/Music wiki:/home/archbox/Documents/wiki
+	scala $(appjar) --loglevel=ALL --multiple -p=8000 image:/home/archbox/Pictures music:/home/archbox/Music wiki:/home/archbox/Documents/wiki
 
 
 # Requires the rule $ make sh or $ make sh-guard to be run before.

@@ -46,7 +46,8 @@ case class HttpRequest(
   version:   String,
   address:   InetAddress,
   inpStream: java.io.InputStream,
-  outStream: java.io.OutputStream
+  outStream: java.io.OutputStream,
+  logger:    java.util.logging.Logger
 ) {
 
  
@@ -158,6 +159,7 @@ case class HttpRequest(
     mimeType: String      = "application/octet-stream",
     headers:  HttpHeaders = Map[String, String]()
   ) = {
+    logger.fine("Sending HTTP Response file: " + file)
     try {
       val inp = new java.io.FileInputStream(file)
       val fileSize = new java.io.File(file).length()
@@ -182,6 +184,9 @@ case class HttpRequest(
       val p  = Paths.get(path)
       rp.relativize(p).toString
     }
+
+    logger.fine(s"Directory navigation - rootPath = $rootPath, dirPath = $dirPath, urlPath = $urlPath ")
+
     val contents = new java.io.File(dirPath).listFiles
     val files = contents.filter(_.isFile).map(_.getName)
     val dirs  = contents.filter(_.isDirectory).map(_.getName)
@@ -384,7 +389,8 @@ class HttpServer(verbose: Boolean = false, logger: java.util.logging.Logger){
         version   = httpVersion,
         address   = client.getInetAddress(),
         inpStream = client.getInputStream(),
-        outStream = client.getOutputStream()
+        outStream = client.getOutputStream(),
+        logger    = this.logger
       )
       Some(req)
     }

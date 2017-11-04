@@ -213,18 +213,15 @@ case class HttpRequest(
     showIndex: Boolean = true 
   ) = {
 
+    //this.logger.fine("sendDirNavResponse ($dirPath, $urlPath, $fileUrl ...) ")
+
     // Secure against web server against Attacks Based On File and Path Names
     // See: https://www.w3.org/Protocols/rfc2616/rfc2616-sec15.html
     //
     val fileName = Utils.decodeURL(fileURL).replace("..", "")
     val file = new java.io.File(dirPath, fileName)
 
-    // println("-----------------------------")
-    // println("dirPath = " + dirPath)
-    // println("urlPath = " + urlPath)
-    // println("fileURL = " + fileURL)
-    // println("file    = " + file)
-    // println("-----------------------------")
+    // this.logger.fine(s"sendDirNavResponse -> fileName = $fileName, file = $file")
 
     file match {
       case _ if !file.exists()
@@ -237,7 +234,8 @@ case class HttpRequest(
           => {
             val index = new java.io.File(file, "index.html")
             if (showIndex && index.isFile())
-              this.sendRedirect(new java.io.File(urlPath, fileName).toString + "/" + "index.html")              
+              this.sendRedirect(Utils.joinPathsAsURls(urlPath, fileName, "index.html"))
+              //this.sendRedirect(new java.io.File(urlPath, fileName).toString + "/" + "index.html")
             else            
               this.sendDirectoryNavListResponse(
                 dirPath,
@@ -303,6 +301,7 @@ class HttpServer(verbose: Boolean = false, logger: java.util.logging.Logger){
   def addRouteDirNav(dirPath: String, urlPath: String) = {
     this.addRouteParamGET(urlPath){ (req: HttpRequest, fileURL: String) =>
       // println("File URL = " + fileURL)
+      logger.fine(s"Setting up route: addRouteDirNav(dirPath = $dirPath, urlPath = $urlPath )")
       req.sendDirNavResponse(dirPath, urlPath, fileURL)
     }
   }

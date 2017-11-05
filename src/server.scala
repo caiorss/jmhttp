@@ -191,20 +191,18 @@ case class HttpRequest(
     val files = contents.filter(_.isFile).map(_.getName)
     val dirs  = contents.filter(_.isDirectory).map(_.getName)
     withResponseLen(){ resp =>
-      resp.writeLine(s"<h1>Contents of ${urlPath}/${relativePath(rootPath, dirPath)}</h1>")
+      val p =  Utils.urlBuilder(urlPath, relativePath(rootPath, dirPath))
+      resp.writeLine(s"<h1>Contents of $p</h1>")
       resp.writeLine("<h2>Directories</h2>")
       dirs foreach { dir =>
-        if (urlPath == "/")
-          resp.writeLine(s"<a href='/${dir}'>${dir}</a></br></br>")
-        else
-          resp.writeLine(s"<a href='${urlPath}/${dir}'>${dir}</a></br></br>")
+        val url = Utils.urlBuilder(urlPath, dir)
+        logger.fine(s"DEBUG urlPath = $urlPath ; dir = $dir ; url = ${url} ")
+        resp.writeLine(s"<a href='$url'>$dir</a></br></br>")
       }
       resp.writeLine("<h2>Files</h2>")
       files foreach { file =>
-        if (urlPath == "/")
-          resp.writeLine(s"<a href='/${file}'>${file}</a></br></br>")
-        else
-          resp.writeLine(s"<a href='${urlPath}/${file}'>${file}</a></br></br>")
+        val url = Utils.urlBuilder(urlPath, file)
+        resp.writeLine(s"<a href='$url'>${file}</a></br></br>")
       }
     }
   }
@@ -218,7 +216,7 @@ case class HttpRequest(
     showIndex: Boolean = true 
   ) = {
 
-    //this.logger.fine("sendDirNavResponse ($dirPath, $urlPath, $fileUrl ...) ")
+    this.logger.fine(s"sendDirNavResponse ($dirPath, $urlPath, $fileURL ...) ")
 
     // Secure against web server against Attacks Based On File and Path Names
     // See: https://www.w3.org/Protocols/rfc2616/rfc2616-sec15.html
@@ -226,7 +224,7 @@ case class HttpRequest(
     val fileName = Utils.decodeURL(fileURL).replace("..", "")
     val file = new java.io.File(dirPath, fileName)
 
-    // this.logger.fine(s"sendDirNavResponse -> fileName = $fileName, file = $file")
+    this.logger.fine(s"sendDirNavResponse -> fileName = $fileName, file = $file")
 
     file match {
       case _ if !file.exists()
@@ -239,14 +237,18 @@ case class HttpRequest(
           => {
             val index = new java.io.File(file, "index.html")
             if (showIndex && index.isFile())
-              this.sendRedirect(Utils.joinPathsAsURls(urlPath, fileName, "index.html"))
+              this.sendRedirect(Utils.urlBuilder(Utils.urlBuilder(urlPath, fileName), "index.html"))
               //this.sendRedirect(new java.io.File(urlPath, fileName).toString + "/" + "index.html")
-            else            
+            else{
+              val p = Utils.urlBuilder(urlPath, fileName)
+              logger.fine(s"SendDirNavResponse - urlPath = $urlPath - fileName = $fileName")
+              logger.fine("Listing directory " + p)
               this.sendDirectoryNavListResponse(
-                dirPath,
-                file.getAbsolutePath,
-                new java.io.File(urlPath, fileName).toString
+                rootPath = dirPath,
+                dirPath  = file.getAbsolutePath,
+                urlPath  = p
               )
+            }
           }    
     }
   }

@@ -103,7 +103,7 @@ object Main{
     // Set the logging format 
     System.setProperty(
       "java.util.logging.SimpleFormatter.format",
-      "[%1$tF %1$tT] [%4$s] - %2$s - %5$s %6$s%n"
+      "[%1$tF %1$tT] [%4$s] - %2$s - %5$s %6$s%n\n"
       // "[%1$tF %1$tT] [%4$-7s] %5$s %n"
     )
     

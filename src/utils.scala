@@ -74,18 +74,6 @@ object Utils{
     timer.schedule(task, delay)
   }
 
-  def joinPathsAsURls(list: String*) = {
-    val file = list.foldLeft(null: java.io.File){(acc, x)
-      =>  new java.io.File(acc, x)
-    }
-    val pathSep =  System.getProperty("path.separator")
-    assert(pathSep != null, "Path separator not supposed to be null")
-    // If path separator is ';', the system is Windows, otherwise it is Windows.
-    if (pathSep == ";")
-      file.getAbsolutePath().replace("\\", "/")
-    else
-      file.getAbsolutePath
-  }
 
   val mimeTypes = Map(
 

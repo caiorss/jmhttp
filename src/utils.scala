@@ -24,6 +24,19 @@ object Utils{
   def decodeURL(url: String) =
     java.net.URLDecoder.decode(url, "UTF-8")
 
+
+  def urlBuilder(path: String, segment: String) =
+    path match {
+      case _ if (path == null || path.isEmpty() )
+        => "/" + segment
+      case _ if (path.endsWith("/"))
+          => path + segment
+      case _
+          => path + "/" + segment
+    }
+
+
+
   /** Try get IP address of current machine rejecting loopback,
     * inactive, and virtual network interfaces.
     */

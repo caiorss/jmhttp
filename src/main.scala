@@ -68,6 +68,12 @@ object Main{
       description = "Set application log level. [OFF | ALL | FINE | INFO. (Default value INFO)"
     )
 
+    parser.addOptionFlag(
+      name       = "no-index",
+      shortName  = null,
+      description = "Don't render index.html if available in directory listing."
+    )    
+
     try parser.parse(args.toList)
     catch {
       case ex: jmhttp.optParse.OptHandlingException
@@ -82,6 +88,7 @@ object Main{
     val browserOpt = parser.getOptAsBool ("browser")
     val multiple   = parser.getOptAsBool ("multiple")
     val logLevel   = parser.getOptAsStr  ("loglevel")
+    val noIndex    = parser.getOptAsBool ("no-index")
 
     if (parser.getOperands().isEmpty)
     {
@@ -141,7 +148,7 @@ object Main{
     // logger.addHandler(fhandler)
 
 
-    val server = new HttpServer(verbose = verbosity, logger)
+    val server = new HttpServer(logger)
 
     server.addRouteDebug("/echo")
 
@@ -150,7 +157,7 @@ object Main{
       val path     = operands.head
       exitIfFalse(operands.size > 1,  "Error: this mode expects only one operand.")
       exitIfFalse(!dirExists(path),  s"Error: directory ${path} doesn't exist.")
-      server.addRouteDirNav(parser.getOperands().head, "/")
+      server.addRouteDirNav(parser.getOperands().head, "/", showIndex = !noIndex)
     }
     else
       try server.addRouteDirsIndex(parser.getOperands() map parseOperand)

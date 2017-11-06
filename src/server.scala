@@ -305,15 +305,15 @@ class HttpServer(logger: java.util.logging.Logger){
     this.addRoute(rule)
   }
 
-  def addRouteDirNav(dirPath: String, urlPath: String) = {
+  def addRouteDirNav(dirPath: String, urlPath: String, showIndex: Boolean = true) = {
     this.addRouteParamGET(urlPath){ (req: HttpRequest, fileURL: String) =>
       // println("File URL = " + fileURL)
       logger.fine(s"Setting up route: addRouteDirNav(dirPath = $dirPath, urlPath = $urlPath )")
-      req.sendDirNavResponse(dirPath, urlPath, fileURL)
+      req.sendDirNavResponse(dirPath, urlPath, fileURL, showIndex = showIndex)
     }
   }
 
-  def addRouteDirsIndex(urlPaths: Seq[(String, String)]) = {
+  def addRouteDirsIndex(urlPaths: Seq[(String, String)], showIndex: Boolean = true) = {
 
     val indexPage = urlPaths.foldLeft(""){ (acc, tpl) =>
       val (dirUrl, dirPath) = tpl
@@ -326,7 +326,7 @@ class HttpServer(logger: java.util.logging.Logger){
     }
 
     urlPaths foreach { case (dirUrl, dirPath) =>
-      this.addRouteDirNav(dirPath, dirUrl)
+      this.addRouteDirNav(dirPath, dirUrl, showIndex = showIndex)
     }
   }
 

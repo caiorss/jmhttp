@@ -262,7 +262,7 @@ case class HttpRoute(
   val action:  HttpRequest => Unit
 )
 
-class HttpServer(verbose: Boolean = false, logger: java.util.logging.Logger){
+class HttpServer(logger: java.util.logging.Logger){
 
   import scala.collection.mutable.ListBuffer
 

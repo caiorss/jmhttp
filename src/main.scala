@@ -50,11 +50,6 @@ object Main{
     )
 
     parser.addOptionFlag(
-      name       = "verbose",
-      description = "Increase server logging verbosity."
-    )
-
-    parser.addOptionFlag(
       name       = "browser",
       shortName  = "b",
       description = "Open server url in default web browser."
@@ -82,12 +77,11 @@ object Main{
           }            
     }
 
-    val port       = parser.getOptAsInt("port")
-    val host       = parser.getOptAsStr("host")
-    val verbosity  = parser.getOptAsBool("verbose")
-    val browserOpt = parser.getOptAsBool("browser")
-    val multiple   = parser.getOptAsBool("multiple")
-    val logLevel   = parser.getOptAsStr("loglevel")
+    val port       = parser.getOptAsInt  ("port")
+    val host       = parser.getOptAsStr  ("host")
+    val browserOpt = parser.getOptAsBool ("browser")
+    val multiple   = parser.getOptAsBool ("multiple")
+    val logLevel   = parser.getOptAsStr  ("loglevel")
 
     if (parser.getOperands().isEmpty)
     {

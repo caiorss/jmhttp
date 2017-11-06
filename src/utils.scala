@@ -56,8 +56,9 @@ object Utils{
       .asScala
       .toSeq
     interfaces.filter(ni =>
-      !ni.isLoopback()          // Exclude loopback interfaces
-        && ni.isUp()            // Select active interface
+           !ni.getName.startsWith("vboxnet") // Exclude virtualbox virutal interfaces
+        && !ni.isLoopback()                  // Exclude loopback interfaces
+        && ni.isUp()                         // Select active interface
         && ni.getHardwareAddress() != null
         && getInterfaceAddress(ni).isDefined
     )

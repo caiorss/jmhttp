@@ -159,7 +159,7 @@ case class HttpRequest(
     mimeType: String      = "application/octet-stream",
     headers:  HttpHeaders = Map[String, String]()
   ) = {
-    logger.fine("Sending HTTP Response file: " + file)
+    logger.fine(s"Sending HTTP Response file: $file - mime type = $mimeType " )
     try {
       val inp = new java.io.FileInputStream(file)
       val fileSize = new java.io.File(file).length()

@@ -221,12 +221,13 @@ object Utils{
 
   )
 
-  def getMimeType(file: String) =
-    file.split("\\.", 2) match {
+  def getMimeType(file: String) = {
+    val fname = new java.io.File(file).getName()
+     fname.split("\\.", 2) match {
       case Array(_, ext)
           => mimeTypes get(ext) getOrElse "application/octet-stream"
       case _
           => "application/octet-stream"
-    }
-
+     }
+  }
 }

@@ -38,20 +38,24 @@ on insecure or public local networks.
 The Jmhttp server is self-explanatory:
 
 #+BEGIN_SRC text 
-$ jmhttp 
-Usage: jmhttp [OPTIONS] ... [[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]
+$ bin/jmhttp 
 A micro Java/Scala http server to share files in the local network
-                       
-   -h, --help          Display this help and exit
-   --version           Output version information and exit.
-   -p, --port=<port>   Port number that the Http server will listen to. Default 8080
-   --host=<hostname>   Host name that the server listens to. Default value 0.0.0.0
-   --verbose           Increase server logging verbosity.
-   -b, --browser       Open server url in default web browser.
-   -m, --multiple      Share multiple directories specified by url1:/dir1, url2:/dir2 ...
+
+Usage: jmhttp [OPTIONS] ... [[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]
+                        
+   -h, --help           Display this help and exit
+   --version            Output version information and exit.
+   -p, --port=<port>    Port number that the Http server will listen to. Default 8080
+   --host=<hostname>    Host name that the server listens to. Default value 0.0.0.0
+   -b, --browser        Open server url in default web browser.
+   -m, --multiple       Share multiple directories specified by url1:/dir1, url2:/dir2 ...
+   --loglevel=<level>   Set application log level. [OFF | ALL | FINE | INFO. (Default value INFO)
+   --no-index           Don't render index.html if available in directory listing.
+   --zeroconf           Publish server at local network with bounjour/zeroconf protocol.
 
 
 #+END_SRC
+
 *** Running the server 
 
 By default, the server binds to port 8080. To change it to another port
@@ -64,16 +68,30 @@ the server to port 8080. The shared directory can accessed at
 http://192.168.1.22:8080 URL.
 
 #+BEGIN_SRC sh 
-$ jmhttp /home/archbox/test/
-Server running at: http://192.168.1.22:8080
+$ bin/jmhttp /home/archbox/test/
+Server running at: http://192.168.0.3:8080
+[2017-11-08 13:59:02] [INFO] - jmhttp.server.HttpServer run
+ - Starting server at host = 0.0.0.0 and port = 8080 
+
+
+[2017-11-08 13:59:33] [INFO] - jmhttp.server.HttpServer $anonfun$run$2
+ - HTTP Request: path = / - method = GET - address = /0:0:0:0:0:0:0:1 
+
+[2017-11-08 13:59:33] [INFO] - jmhttp.server.HttpServer $anonfun$run$2
+ - HTTP Request: path = /favicon.ico - method = GET - address = /0:0:0:0:0:0:0:1 
+
+... ... ... ... 
 
 #+END_SRC
+
+[[file:images/screenshot1.png][file:images/screenshot1.png]] 
+
+[[file:images/screenshot2.png][file:images/screenshot2.png]]
 
 On windows this sever can be run with: 
 
 #+BEGIN_SRC sh 
-$ java -jar jmhttp /home/archbox/test 
-Server running at: http://192.168.1.22:8080
+$ java -jar jmhttp C:\Users\arch\desktop
 #+END_SRC
 
 *Example 2*
@@ -81,17 +99,30 @@ Server running at: http://192.168.1.22:8080
 Changing the port that server listen run:
 
 #+BEGIN_SRC sh 
-$ jmhttp -p=9090 /home/archbox/test/
-Server running at: http://192.168.1.22:9090
+  $ jmhttp -p=9090 /home/archbox/test/
+  Server running at: http://192.168.0.3:9090
+  [2017-11-08 14:00:43] [INFO] - jmhttp.server.HttpServer run
+   - Starting server at host = 0.0.0.0 and port = 9090 
+
+  [2017-11-08 14:00:58] [INFO] - jmhttp.server.HttpServer $anonfun$run$2
+   - HTTP Request: path = /readerMonad.org - method = GET - address = /0:0:0:0:0:0:0:1 
+
+  [2017-11-08 14:00:58] [INFO] - jmhttp.server.HttpServer $anonfun$run$2
+   - HTTP Request: path = /favicon.ico - method = GET - address = /0:0:0:0:0:0:0:1 
+
+
 #+END_SRC
 
 *Example 3*
 
-Open the server website in the browser:
+Open the server website in the default browser after the server
+start. It will open the server website at  http://192.168.0.3:9090
 
 #+BEGIN_SRC sh 
-$ jmhttp --browser -p=9090 /home/archbox/test/
-Server running at: http://192.168.1.22:9090
+$ bin/jmhttp --browser -p=9090 /home/archbox/test/
+Server running at: http://192.168.0.3:9090
+[2017-11-08 14:02:21] [INFO] - jmhttp.server.HttpServer run
+ - Starting server at host = 0.0.0.0 and port = 9090 
 
 # Or 
 
@@ -116,6 +147,27 @@ Server running at: http://192.168.1.22:8080
 
 #+END_SRC
 
+[[file:images/screenshot3-shared-dirs.png][file:images/screenshot3-shared-dirs.png]]
+
+[[file:images/screenshot4-index.png][file:images/screenshot4-index.png]]
+
+
+*Example 5* 
+
+Advertising the server at local network with multicast-DNS, zeroconf
+(that Apple calls Boujour). 
+
+#+BEGIN_SRC sh 
+ bin/jmhttp --zeroconf -m -b /home/archbox/opt
+#+END_SRC
+
+The advertising with zeroconf allows the server to be accessed without
+knowing or typing its IP address by using any Zeroconf browser,
+android app with zeroconf for network service discovery or Mac OSX
+Safari Zeroconf.
+
+[[file:images/screenshot5-mac-osx-bounjour.png][file:images/screenshot5-mac-osx-bounjour.png]]
+
 ** Building Instructions 
 
 The server requires scala as building dependency and jarget building
@@ -126,6 +178,8 @@ tool to bundle the package.
  - [X] - Implement logging
 
  - [X] - Implement a consistent command line handling.
+
+ - [X] - Add Zeroconf - Network Service advertising.
 
  - [ ] - Add basic HTTP authentication.
 

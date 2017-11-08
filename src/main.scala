@@ -77,7 +77,7 @@ object Main{
     parser.addOptionFlag(
       name       = "zeroconf",
       shortName  = null,
-      description = "Announce server at local network through bounjour/zeroconf protocol."
+      description = "Publish server at local network with bounjour/zeroconf protocol."
     )    
 
 

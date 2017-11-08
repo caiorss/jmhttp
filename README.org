@@ -179,8 +179,61 @@ Safari Zeroconf.
 
 ** Building Instructions 
 
-The server requires scala as building dependency and jarget building
-tool to bundle the package.
+The server requires scala as building dependency and  [[https://github.com/caiorss/jarget][jarget]]  building
+tool to fetch the dependencies and bundle them with the application.
+
+To get jarget, just run: 
+
+#+BEGIN_SRC sh 
+$ curl -o ~/bin/jarget -L https://github.com/caiorss/jarget/raw/v2.1.0-beta-release/jarget && chmod +x ~/bin/jarget 
+#+END_SRC
+
+To build the server run: 
+
+#+BEGIN_SRC sh 
+$ make force && make sh-guard 
+#+END_SRC
+
+It will generate an unix-executable uber jar, namely "bin/jmhttp"
+
+#+BEGIN_SRC sh 
+  $ bin/jmhttp 
+  A micro Java/Scala http server to share files in the local network
+
+  Usage: jmhttp [OPTIONS] ... [[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]
+      
+     ... ... ... ... ... ... ... ...... ... ... ...
+
+
+  $ java -jar bin/jmhttp
+  A micro Java/Scala http server to share files in the local network
+
+  Usage: jmhttp [OPTIONS] ... [[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]
+                          
+     -h, --help           Display this help and exit
+     ... ... ... ... ... ... ... ...... ... ... ...
+
+     
+  $ file bin/jmhttp 
+  bin/jmhttp: a /usr/bin/env sh  script executable (binary data)
+
+  $ du -h bin/jmhttp
+  1.7M    bin/jmhttp
+  1.7M    total
+
+#+END_SRC
+
+After building the jarget cache can be removed: 
+
+#+BEGIN_SRC sh 
+$ jarget cache -jars 
+/home/archbox/.jarget/cache/javax/jmdns/jmdns/3.4.1/jmdns-3.4.1.jar
+
+$ jarget cache -path
+/home/archbox/.jarget/cache
+
+$ rm -rf /home/archbox/.jarget 
+#+END_SRC
 
 ** Tasklist and future work 
 

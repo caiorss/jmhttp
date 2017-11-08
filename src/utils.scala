@@ -231,4 +231,61 @@ object Utils{
           => "application/octet-stream"
      }
   }
+
+} /* ------- End of object Utils ----------- */
+
+
+/** 
+    Wrapper over jmDNS open source libary to make the server
+    discoverable through Bounjour/Zeroconf protocol at local network.
+*/
+object NetDiscovery {
+
+  import javax.jmdns.ServiceInfo
+  import javax.jmdns.JmDNS
+  import java.net.InetAddress
+  import java.net.NetworkInterface
+  import javax.jmdns.ServiceEvent
+  import javax.jmdns.ServiceListener
+  import collection.JavaConverters._
+
+  /** Try get name of active network interface. */
+  def getActiveInterface(): Option[String] = {
+    val interfaces = NetworkInterface
+      .getNetworkInterfaces()
+      .asScala
+      .toSeq
+    interfaces.find(ni =>
+      !ni.getName.startsWith("vboxnet") 
+        && !ni.isLoopback()             
+        && ni.isUp()                    
+        && ni.getHardwareAddress() != null
+    ).map(_.getName())
+  } // ----- EOF function getLocalAddress() -------- //
+
+
+  def registerService (  
+    serviceType:  String,
+    serviceName:  String,
+    servicePort:  Int,
+    serviceDesc:  String) = (interface: String) => {
+
+    def getInterfaceAddress(net: NetworkInterface) =
+      net.getInterfaceAddresses()
+        .asScala
+        .toSeq
+        .find(inf => inf.getBroadcast() != null)
+        .map(_.getAddress())
+
+    val addr = Option(NetworkInterface.getByName(interface))
+      .flatMap(getInterfaceAddress _)
+    val jm = addr map JmDNS.create
+    val info = ServiceInfo.create(serviceType, serviceName, servicePort, serviceDesc);
+    jm match {
+      case Some(x: javax.jmdns.JmDNS) => x.registerService(info)
+      case None    => throw new java.io.IOException("Error: Network interface not found.")
+    }
+  }
+
+
 }

@@ -20,19 +20,19 @@ appjar := bin/$(app).jar
 all: $(appjar)
 
 force: $(src)
-	scalac $(src) -d $(appjar)
+	jarget exec javax.jmdns/jmdns/3.4.1 -- scalac $(src) -d $(appjar)
 
 $(appjar): $(src)
-	fsc $(src) -d $(appjar)
+	jarget exec javax.jmdns/jmdns/3.4.1 -- fsc $(src) -d $(appjar)
 
 # Make executable uber-jar not shrunk.
 sh: $(appjar)
-	jarget uber -scala -sh -m $(appjar) -o bin/jmhttp
+	jarget uber -scala -sh -m $(appjar) -o bin/jmhttp  -p javax.jmdns/jmdns/3.4.1
 
 # Make executable uber-jar and shrink it with proguard.
 sh-guard: $(appjar) config.pro
 	mkdir -p bin
-	jarget uber -scala -m $(appjar) -o bin/jmhttp-uber.jar
+	jarget uber -o bin/jmhttp-uber.jar -scala -m $(appjar) -p javax.jmdns/jmdns/3.4.1
 	@# Shrink app with proguard 
 	java -jar proguard.jar @config.pro
 	@# Make file executable 
@@ -47,10 +47,10 @@ doc: $(src)
 
 
 test1: $(appjar)
-	scala $(appjar) --loglevel=INFO -p=9090 /home/archbox/Pictures
+	jarget exec javax.jmdns/jmdns/3.4.1 -- scala $(appjar) --loglevel=INFO -p=9090 /home/archbox/Pictures
 
 test2: $(appjar)
-	scala $(appjar) --loglevel=ALL --multiple -p=8000 image:/home/archbox/Pictures music:/home/archbox/Music wiki:/home/archbox/Documents/wiki
+	jarget exec javax.jmdns/jmdns/3.4.1 -- scala $(appjar) --zeroconf --loglevel=ALL --multiple -p=8000 image:/home/archbox/Pictures music:/home/archbox/Music wiki:/home/archbox/Documents/wiki
 
 
 # Requires the rule $ make sh or $ make sh-guard to be run before.

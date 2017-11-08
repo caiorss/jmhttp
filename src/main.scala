@@ -1,7 +1,7 @@
 package jmhttp.main
 
 import jmhttp.server.HttpServer 
-import jmhttp.utils.Utils
+import jmhttp.utils.{Utils, NetDiscovery}
 import jmhttp.optParse.OptSet 
 
 object Main{
@@ -74,6 +74,13 @@ object Main{
       description = "Don't render index.html if available in directory listing."
     )    
 
+    parser.addOptionFlag(
+      name       = "zeroconf",
+      shortName  = null,
+      description = "Announce server at local network through bounjour/zeroconf protocol."
+    )    
+
+
     try parser.parse(args.toList)
     catch {
       case ex: jmhttp.optParse.OptHandlingException
@@ -89,6 +96,7 @@ object Main{
     val multiple   = parser.getOptAsBool ("multiple")
     val logLevel   = parser.getOptAsStr  ("loglevel")
     val noIndex    = parser.getOptAsBool ("no-index")
+    val zeroconf   = parser.getOptAsBool ("zeroconf")
 
     if (parser.getOperands().isEmpty)
     {
@@ -188,7 +196,17 @@ object Main{
       Utils.runDealy(500){
         serverURL foreach Utils.openUrl
       }
-  
+
+
+    if(zeroconf){
+      val intf = NetDiscovery.getActiveInterface()
+      intf foreach NetDiscovery.registerService(
+        serviceType = "_http._tcp.local",
+        serviceName =  "jmhttp server",
+        servicePort =  port,
+        serviceDesc = "micro server for file sharing."
+      )
+    }
 
     server.run(port = port, host = host)
 

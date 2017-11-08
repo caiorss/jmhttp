@@ -18,13 +18,21 @@ Features:
 
  - _Self contained_: Just-one jar file, intuitive and easy to use.
 
- - _No instalation required+_, it is ready to use and ready to go.
+ - _No instalation required+_, it is ready to use and ready to
+   go. 
 
  - _Cross-platform_, as it runs on top of the Java Platform. So this
    server can be run without recompiling and reinstalling on Linux,
    Mac OSX, BSD or Windows.
 
- - _Simple configuration_ 
+ - _Serve static website_ - The server can serve a static web site if
+   there is any file named index.html at the browsed directory. 
+
+ - _Network service advertising_ - The server can be advertised at
+   local network and made discoverable as networks printers, scanners,
+   cameras and etc, through zeroconf protocol (aka Apple's
+   Bounjour). So it can be located without knowing its network
+   address.
 
 
 *WARNING*: This server doesn't use SSL/TLS security extension for
@@ -154,11 +162,12 @@ Server running at: http://192.168.1.22:8080
 
 *Example 5* 
 
-Advertising the server at local network with multicast-DNS, zeroconf
-(that Apple calls Boujour). 
+Too advertising the server at local network with multicast-DNS, zeroconf
+(that Apple calls Boujour) just add the flag --zeroconf. 
+
 
 #+BEGIN_SRC sh 
- bin/jmhttp --zeroconf -m -b /home/archbox/opt
+ $ bin/jmhttp --zeroconf -p=9090 -m -b opt:/home/archbox/opt pics:/home/archbox/Pictures org:/home/archbox/Documents/wiki 
 #+END_SRC
 
 The advertising with zeroconf allows the server to be accessed without

@@ -1,7 +1,8 @@
+#+INCLUDE: theme/style.org
 #+TITLE: jmHttp Server 
 #+AUTHOR:  Caio Rodrigues
 #+DESCRIPTION: A portable cross-platform http web server for sharing file and directories on Local Network.
-#+KEYWRODS: http, web, server, share, files, lan, local, network, java, scala, cross platform
+#+KEYWRODS: http, web, server, share, files, lan, local, network, java, scala, zeroconf, bonjour, mdns, multicast
 #+STARTUP: content 
 
 
@@ -233,6 +234,33 @@ $ jarget cache -path
 /home/archbox/.jarget/cache
 
 $ rm -rf /home/archbox/.jarget 
+#+END_SRC
+
+** Binary release 
+
+The most update version can be downloaded from the link below or using
+curl. 
+
+ - [[%20https://github.com/caiorss/jmhttp/raw/gh-pages/jmhttp][jmhttp - Download]] 
+
+#+BEGIN_SRC sh 
+$ curl -O -L https://github.com/caiorss/jmhttp/raw/gh-pages/jmhttp
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   130  100   130    0     0     21      0  0:00:06  0:00:06 --:--:--    42
+100 1703k  100 1703k    0     0   121k      0  0:00:14  0:00:14 --:--:--  475k
+
+$ chmod +x jmhttp
+
+$ ./jmhttp --version
+jmhttp - v1.0
+
+$ java -jar ./jmhttp --version
+jmhttp - v1.0
+
+$ sh ./jmhttp --version
+jmhttp - v1.0
+
 #+END_SRC
 
 ** Tasklist and future work 

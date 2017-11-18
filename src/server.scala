@@ -216,7 +216,7 @@ case class HttpRequest(
     showIndex: Boolean = true 
   ) = {
 
-    this.logger.fine(s"sendDirNavResponse ($dirPath, $urlPath, $fileURL ...) ")
+    this.logger.fine(s"sendDirNavResponse (dirPath = $dirPath, urlPath = $urlPath, fileURL = $fileURL ...) ")
 
     // Secure against web server against Attacks Based On File and Path Names
     // See: https://www.w3.org/Protocols/rfc2616/rfc2616-sec15.html

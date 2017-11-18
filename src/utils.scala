@@ -22,7 +22,8 @@ object Utils{
     java.net.URLEncoder.encode(url, "UTF-8")
 
   def decodeURL(url: String) =
-    java.net.URLDecoder.decode(url, "UTF-8")
+    java.net.URLDecoder.decode(url.replace("+", "%2B"),
+    "UTF-8").replace("%2B", "+")
 
 
   def urlBuilder(path: String, segment: String) =

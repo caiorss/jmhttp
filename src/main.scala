@@ -19,7 +19,7 @@ object Main{
   def parseOperand(oper: String) =
     oper.split(":", 2) match {
       case Array(k, v)
-          =>  ("/" + k, v)
+          =>  ("/" + k, Utils.expandPath(v))
       case _
           => throw new IllegalArgumentException("Error: invalid shared directory, expected <url>:<path> string")
     }

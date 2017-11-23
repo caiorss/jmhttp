@@ -36,6 +36,16 @@ object Utils{
           => path + "/" + segment
     }
 
+  /** Expand path to absolute path. 
+      -> Expand dot (.) into current directory or $(pwd) on Unix, 
+      -> Expand tilde (~) into user home directory. 
+      -> Relative paths are expanded to absolute path. 
+    ,*/
+  def expandPath(path: String) = {
+    val p = path
+      .replaceFirst("~", System.getProperty("user.home"))
+    new java.io.File(p).getAbsolutePath()
+  }
 
 
   /** Try get IP address of current machine rejecting loopback,

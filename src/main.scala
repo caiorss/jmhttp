@@ -47,6 +47,13 @@ Examples:
   or
   > $ jmhttp -b ~/Documents
 
+  Share single directory with basic authentication. It will serve the
+  user home directory (~) tilde or /home/<username> on Linux,
+  /Users/<username> on MacOSX and C:\\Users\<username> on Windows with
+  authentication requesting username john and password pxjmnf.
+
+  > $ ./jmhttp.sh -p=8000 --auth=john:pxjmnf ~
+
   Share single directory using port 9090 - The server can be accessed at url
   http://localhost:9090 or http://<server addr>:9090
 
@@ -61,7 +68,7 @@ Examples:
 
   > $ jmthtp -p=8090 --zeroconf -m docs:~/Documents pics:~/Pictures
 
-  Share multiple directories with tsl/ssl (Transport Socket Layer/
+  Share multiple directories with tsl/ssl (Transport Layer Security/
   Secure Socket Layer) encryption. It changes the server's URL to
   https://<serveraddr>:8080. It is no longer http://...
 
@@ -93,10 +100,17 @@ Examples:
     )
 
     parser.addOptionStrOpt(
-      name        = "tsl",
+      name = "auth",
+      shortName = null,
+      argName = "username:password",
+      description = "Enable basic http authentication with a given user name and password.",
+    )
+
+    parser.addOptionStrOpt(
+      name        = "tls",
       shortName   = null,
       argName     = "<key store>:<password>",
-      description = "Enable TLS/SSL. If it enabled use https:<addr>:<port> to connect.",
+      description = "Enable TLS (Transport Layer Security)/SSL - encrypt connection. Sever URL https:<addr>:<port> to connect.",
     )
 
     parser.addOptionFlag(
@@ -146,9 +160,10 @@ Examples:
     val browserOpt = parser.getOptAsBool   ("browser")
     val multiple   = parser.getOptAsBool   ("multiple")
     val logLevel   = parser.getOptAsStr    ("loglevel")
-    val tslConf    = parser.getOptAsStrOpt ("tsl")
+    val tslConf    = parser.getOptAsStrOpt ("tls")
     val noIndex    = parser.getOptAsBool   ("no-index")
     val zeroconf   = parser.getOptAsBool   ("zeroconf")
+    val auth       = parser.getOptAsStrOpt ("auth")
 
     if (parser.getOperands().isEmpty)
     {
@@ -223,8 +238,20 @@ Examples:
     // val fhandler = new FileHandler("jmhttp.log")
     // logger.addHandler(fhandler)
 
+    val serverLogin = auth flatMap { s =>
+      s.split(":") match {
+        case Array(user, pass)
+            => Some(user, pass)
+        case _
+            => None
+      }
+    }
 
-    val server = new HttpServer(logger, !tslConf.isEmpty)
+    val server = new HttpServer(
+      logger,
+      tsl = !tslConf.isEmpty,
+      login = serverLogin
+    )
 
     server.addRouteDebug("/echo")
 

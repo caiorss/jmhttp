@@ -50,8 +50,6 @@ case class HttpRequest(
   logger:    java.util.logging.Logger
 ) {
 
- 
-
   val httpVersion = "HTTP/1.0"
 
   type HttpHeaders = Map[String, String]
@@ -153,6 +151,32 @@ case class HttpRequest(
       headers = Map("Location" -> url)
     )
 
+  def sendBasicAuth(user: String, passwd: String)(action: HttpRequest => Unit) = {
+    val secret =
+      java.util.Base64
+        .getEncoder()
+        .encodeToString((user + ":" + passwd).getBytes("UTF-8"))
+
+    def denyAccess() =
+      this.sendTextResponse(
+        "Unauthorized Access",
+        401,
+        "UNATHORIZED",
+        headers = Map("Www-Authenticate" -> "Basic realm=\"Fake Realm\"")
+      )
+
+    val auth = this.headers.get("Authorization")
+    auth match {
+      case None
+          => denyAccess()
+      case Some(a)
+          =>
+        if (a == "Basic " + secret)
+          action(this)
+        else
+          denyAccess()        
+    }
+  }
 
   def sendFileResponse(
     file:     String,
@@ -261,7 +285,11 @@ case class HttpRoute(
   val action:  HttpRequest => Unit
 )
 
-class HttpServer(logger: java.util.logging.Logger, tsl: Boolean = false){
+class HttpServer(
+  logger: java.util.logging.Logger,
+  tsl: Boolean = false,
+  login: Option[(String, String)] = None
+){
 
   import scala.collection.mutable.ListBuffer
   import javax.net.ServerSocketFactory
@@ -413,8 +441,17 @@ class HttpServer(logger: java.util.logging.Logger, tsl: Boolean = false){
   def serveRequest(req: HttpRequest) = {
     val rule = routes.find(r => r.matcher(req))
     rule match {
-      case Some(r) => r.action(req)
-      case None    => req.send404Response(s"Error: resource ${req.path} not found")
+      case Some(r)
+          =>
+        login match{
+          case None
+              => r.action(req)            
+          case Some((user, pass))
+              => req.sendBasicAuth(user, pass){ r.action }
+        }
+
+      case None
+          => req.send404Response(s"Error: resource ${req.path} not found")
     }
   }
 

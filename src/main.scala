@@ -49,6 +49,13 @@ object Main{
       description = "Host name that the server listens to. Default value 0.0.0.0"
     )
 
+    parser.addOptionStrOpt(
+      name        = "tsl",
+      shortName   = null,
+      argName     = "<key store>:<password>",
+      description = "Enable TLS/SSL. If it enabled use https:<addr>:<port> to connect.",
+    )
+
     parser.addOptionFlag(
       name       = "browser",
       shortName  = "b",
@@ -81,6 +88,7 @@ object Main{
     )    
 
 
+
     try parser.parse(args.toList)
     catch {
       case ex: jmhttp.optParse.OptHandlingException
@@ -90,13 +98,14 @@ object Main{
           }            
     }
 
-    val port       = parser.getOptAsInt  ("port")
-    val host       = parser.getOptAsStr  ("host")
-    val browserOpt = parser.getOptAsBool ("browser")
-    val multiple   = parser.getOptAsBool ("multiple")
-    val logLevel   = parser.getOptAsStr  ("loglevel")
-    val noIndex    = parser.getOptAsBool ("no-index")
-    val zeroconf   = parser.getOptAsBool ("zeroconf")
+    val port       = parser.getOptAsInt    ("port")
+    val host       = parser.getOptAsStr    ("host")
+    val browserOpt = parser.getOptAsBool   ("browser")
+    val multiple   = parser.getOptAsBool   ("multiple")
+    val logLevel   = parser.getOptAsStr    ("loglevel")
+    val tslConf    = parser.getOptAsStrOpt ("tsl")
+    val noIndex    = parser.getOptAsBool   ("no-index")
+    val zeroconf   = parser.getOptAsBool   ("zeroconf")
 
     if (parser.getOperands().isEmpty)
     {
@@ -115,7 +124,23 @@ object Main{
       "[%1$tF %1$tT] [%4$s] - %2$s\n - %5$s %6$s%n\n"
       // "[%1$tF %1$tT] [%4$-7s] %5$s %n"
     )
-    
+
+    tslConf foreach { conf =>
+      conf.split(":") match { 
+        case Array(keystore, passwd)
+            => {
+              System.setProperty("javax.net.ssl.keyStore", Utils.expandPath(keystore))
+              System.setProperty("javax.net.ssl.keyStorePassword", passwd)
+            }
+        case _
+            => {
+              println("Error: Malformed TSL certificate configuration.")
+              println("Expected <keystore>:<password>")
+              System.exit(1)
+            }
+      }
+    }
+   
 
     //val formatter  = new java.util.logging.SimpleFormatter()
     val logger = Logger.getLogger("jmhttp")
@@ -156,7 +181,7 @@ object Main{
     // logger.addHandler(fhandler)
 
 
-    val server = new HttpServer(logger)
+    val server = new HttpServer(logger, !tslConf.isEmpty)
 
     server.addRouteDebug("/echo")
 
@@ -179,8 +204,11 @@ object Main{
 
     val serverURL =
       Utils.getLocalAddress()
-        .map{ addr => s"http://${addr}:${port}"}
-
+        .map{ addr => if(tslConf.isEmpty)
+          s"http://${addr}:${port}"
+        else
+          s"https://${addr}:${port}"
+      }
 
     serverURL match {
       case Some(url)
@@ -201,7 +229,10 @@ object Main{
     if(zeroconf){
       val intf = NetDiscovery.getActiveInterface()
       intf foreach NetDiscovery.registerService(
-        serviceType = "_http._tcp.local",
+        serviceType = if(tslConf.isEmpty) 
+          "_.https._tcp.local"
+          else
+            "_http._tcp.local",
         serviceName =  "jmhttp server",
         servicePort =  port,
         serviceDesc = "micro server for file sharing."

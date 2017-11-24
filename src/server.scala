@@ -261,7 +261,7 @@ case class HttpRoute(
   val action:  HttpRequest => Unit
 )
 
-class HttpServer(logger: java.util.logging.Logger){
+class HttpServer(logger: java.util.logging.Logger, tsl: Boolean = false){
 
   import scala.collection.mutable.ListBuffer
   import javax.net.ServerSocketFactory
@@ -269,11 +269,13 @@ class HttpServer(logger: java.util.logging.Logger){
   import javax.net.ssl.SSLSession
   import javax.net.ssl.SSLSocket
 
-  // private val ssock  = new ServerSocket()
-  private val ssock = {
-    val ss = javax.net.ssl.SSLServerSocketFactory.getDefault()    
+  private val ssock = if (tsl) {
+    val ss = javax.net.ssl.SSLServerSocketFactory.getDefault()
     ss.createServerSocket()
-  }
+  } else
+    new ServerSocket()
+
+  
 
   private val routes = ListBuffer[HttpRoute]()
 

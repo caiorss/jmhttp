@@ -40,10 +40,17 @@ Features:
    (Secure Socket Layer). It allows the http traffic between the
    server and browser to be encrypted and secure.
 
+ - _Basic Authenticatin login_ 
 
-*WARNING*: The HTTP traffic without TSL/SSL is not encrypted,
-therefore, don't use the server without SSL over the internet or at
-insecure or public local networks.
+
+*WARNING*: 
+
+ - The HTTP traffic without TLS/SSL is not encrypted, therefore, don't
+   use the server without SSL over the internet or at insecure or
+   public local networks.
+
+ - Basic Authentication should not be used without TLS/SSL as the
+   password and login are sent unencrypted as plain text.
 
 ** Usage 
 *** Show help

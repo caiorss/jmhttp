@@ -256,22 +256,33 @@ case class HttpRequest(
 
 } //----  Eof case class HttpRequest ----- //
 
-
 case class HttpRoute(
   val matcher: HttpRequest => Boolean,
   val action:  HttpRequest => Unit
 )
 
-class HttpServer(logger: java.util.logging.Logger){
+class HttpServer(logger: java.util.logging.Logger, tsl: Boolean = false){
 
   import scala.collection.mutable.ListBuffer
+  import javax.net.ServerSocketFactory
+  import javax.net.ssl.SSLServerSocketFactory
+  import javax.net.ssl.SSLSession
+  import javax.net.ssl.SSLSocket
 
-  private val ssock  = new ServerSocket()
+  private val ssock = if (tsl) {
+    val ss = javax.net.ssl.SSLServerSocketFactory.getDefault()
+    ss.createServerSocket()
+  } else
+    new ServerSocket()
+
+  
+
   private val routes = ListBuffer[HttpRoute]()
 
   init()
 
-  private def init(){    
+  private def init(){
+    
   }
 
 
@@ -420,6 +431,8 @@ class HttpServer(logger: java.util.logging.Logger){
       logger.fine(s"Server waiting for connection.")
 
       val client = this.ssock.accept()
+
+      // val session = client.asInstanceOf[SSLSocket].getSession()
 
       Utils.withThread{
         this.parseRequest(client) foreach { req =>

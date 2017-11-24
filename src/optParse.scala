@@ -22,12 +22,14 @@ case class CmdOption(
 class OptHandlingException(msg: String) extends Exception(msg) {
 }
 
-
+ 
+ 
 class OptSet(
   name:         String = "appname",
   description:  String = "What does this application do?",
   operandsDesc: String = "[OPERANDS]",
-  version:      String = null
+  version:      String = null,
+  exampleText:  String = null,
 ){
   import scala.collection.mutable.ListBuffer
   private val options  = ListBuffer[CmdOption]()
@@ -178,6 +180,7 @@ class OptSet(
     )
 
     this.printTupleAsTable(tablet ++ table, margin = 2, sep = 2)
+    Option(exampleText) foreach println
   }
 
   def parse(args: List[String]) = {

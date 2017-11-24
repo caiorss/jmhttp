@@ -17,7 +17,8 @@ network·
 
 Features: 
 
- - _Self contained_: Just-one jar file, intuitive and easy to use.
+ - _Self contained_: Just one file, one jar file, self-explanatory and
+   easy to use and deploy.
 
  - _No instalation required+_, it is ready to use and ready to
    go. 
@@ -35,32 +36,77 @@ Features:
    Bounjour). So it can be located without knowing its network
    address.
 
+ - _SSL/TSL protocol support_ -  TSL (Transport Secure Layer) or SSL
+   (Secure Socket Layer). It allows the http traffic between the
+   server and browser to be encrypted and secure.
 
-*WARNING*: This server doesn't use SSL/TLS security extension for
-end-to-end encryption and data integrity and doesn't have
-authentication too. So it should not be used to share sensitive files
-on insecure or public local networks.
+
+*WARNING*: The HTTP traffic without TSL/SSL is not encrypted,
+therefore, don't use the server without SSL over the internet or at
+insecure or public local networks.
 
 ** Usage 
 *** Show help
 
 The Jmhttp server is self-explanatory:
 
-#+BEGIN_SRC text 
-$ bin/jmhttp 
+#+BEGIN_SRC text
+$ bin/jmhttp
 A micro Java/Scala http server to share files in the local network
 
 Usage: jmhttp [OPTIONS] ... [[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]
-                        
-   -h, --help           Display this help and exit
-   --version            Output version information and exit.
-   -p, --port=<port>    Port number that the Http server will listen to. Default 8080
-   --host=<hostname>    Host name that the server listens to. Default value 0.0.0.0
-   -b, --browser        Open server url in default web browser.
-   -m, --multiple       Share multiple directories specified by url1:/dir1, url2:/dir2 ...
-   --loglevel=<level>   Set application log level. [OFF | ALL | FINE | INFO. (Default value INFO)
-   --no-index           Don't render index.html if available in directory listing.
-   --zeroconf           Publish server at local network with bounjour/zeroconf protocol.
+                                    
+   -h, --help                       Display this help and exit
+   --version                        Output version information and exit.
+   -p, --port=<port>                Port number that the Http server will listen to. Default 8080
+   --host=<hostname>                Host name that the server listens to. Default value 0.0.0.0
+   --tsl=<<key store>:<password>>   Enable TLS/SSL. If it enabled use https:<addr>:<port> to connect.
+   -b, --browser                    Open server url in default web browser.
+   -m, --multiple                   Share multiple directories specified by url1:/dir1, url2:/dir2 ...
+   --loglevel=<level>               Set application log level. [OFF | ALL | FINE | INFO. (Default value INFO)
+   --no-index                       Don't render index.html if available in directory listing.
+   --zeroconf                       Publish server at local network with bounjour/zeroconf protocol.
+
+Examples:
+
+  Share single directory /home/user/Documents at default port 8080
+  listening all hosts.
+
+   > $ jmhttp /home/user/Documents
+  or
+   > $ jmhttp ~/Documents
+
+  Share single address and open server's address with system's default web browser.
+
+  > $ jmhttp --browser ~/Documents
+  or
+  > $ jmhttp -b ~/Documents
+
+  Share single directory using port 9090 - The server can be accessed at url
+  http://localhost:9090 or http://<server addr>:9090
+
+   > $ jmhttp --port=9090 /home/user/Documents
+   > $ jmhttp -p=9090 /home/user/Documents
+
+  Share multiple directories using port 8090 and announcing server
+  through mDNS multicast DNS Discovery service, aka Apple's Bounjour(®)
+  or Zeroconf. It will make the directory Documents available at
+  http:<addr>:8090/docs and ~/Pictures at http:<addr>:8090/pics. Note:
+  the flag (-m) or (--multiple) enables serving multiple directories.
+
+  > $ jmthtp -p=8090 --zeroconf -m docs:~/Documents pics:~/Pictures
+
+  Share multiple directories with tsl/ssl (Transport Socket Layer/
+  Secure Socket Layer) encryption. It changes the server's URL to
+  https://<serveraddr>:8080. It is no longer http://...
+
+  > $ jmhttp -p=8080 --tsl=CertificateFile.jks:password -m docs:~/Documents pics:~/Pictures
+
+  The certificate can be generated using:
+
+  > $ keytool -gerkey -keyalg RSA -alias sec_server \
+    -keystore CertificateFile.jks \
+    -storepass chargeit -validity 1000000 -keysize 2048
 
 
 #+END_SRC
@@ -263,7 +309,7 @@ jmhttp - v1.0
 
 #+END_SRC
 
-** Tasklist and future work 
+** TODO Tasklist and future work 
 
  - [X] - Implement logging
 
@@ -275,7 +321,9 @@ jmhttp - v1.0
 
  - [ ] - Add cookie-based authentication.
 
- - [ ] - Supoport HTTPS/TLS security extension.
+ - [X] - Supoport HTTPS/TLS security extension.
 
  - [ ] - Provide GIT-like subcommands.
+
+ - [ ] - [MAYBE] GUI - Graphical User Interface 
 

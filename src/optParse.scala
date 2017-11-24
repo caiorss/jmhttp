@@ -3,11 +3,12 @@ package jmhttp.optParse
 //
 
 
-trait CmdVal
-case class CmdValStr  (var value: String)       extends CmdVal
-case class CmdValBool (var value: Boolean)      extends CmdVal
-case class CmdValInt  (var value: Int)          extends CmdVal
-case class CmdValList (var value: List[String]) extends CmdVal
+sealed trait CmdVal
+case class CmdValStr    (var value: String)          extends CmdVal
+case class CmdValStrOpt (var value: Option[String])  extends CmdVal
+case class CmdValBool   (var value: Boolean)         extends CmdVal
+case class CmdValInt    (var value: Int)             extends CmdVal
+case class CmdValList   (var value: List[String])    extends CmdVal
 
 case class CmdOption(
   name:         String,
@@ -67,6 +68,23 @@ class OptSet(
     this.add(o)
   }
 
+  def addOptionStrOpt(
+    name:        String,
+    description: String = "description",
+    argName:     String = "arg",
+    shortName:   String = null,
+  ) = {
+    val o = CmdOption(
+      name,
+      shortName,
+      argName,
+      description,
+      CmdValStrOpt(None)
+    )
+    this.add(o)
+  }
+
+
   def addOptionInt(
     name:        String,
     description: String = "description",
@@ -113,6 +131,9 @@ class OptSet(
 
   def getOptAsStr(name: String) =
     this.getOpt(name).map(_.asInstanceOf[CmdValStr].value).get
+
+  def getOptAsStrOpt(name: String) =
+    this.getOpt(name).map(_.asInstanceOf[CmdValStrOpt].value).get
 
   def getOptAsBool(name: String) =
     this.getOpt(name).map(_.asInstanceOf[CmdValBool].value).get
@@ -227,6 +248,14 @@ class OptSet(
           .foreach{case (n, v) =>
             opt.value.asInstanceOf[CmdValStr].value = v
         }
+
+      case CmdValStrOpt(_)
+          =>
+        optargs
+          .find{ case (n, v) => n == opt.name || n == opt.shortName }
+          .foreach{case (n, v) =>
+            opt.value.asInstanceOf[CmdValStrOpt].value = Some(v)
+        }        
 
       case CmdValBool(_)
           =>

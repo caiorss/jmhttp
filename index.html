@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>jmHttp Server</title>
-<!-- 2017-11-08 Wed 15:18 -->
+<!-- 2017-11-24 Fri 04:01 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Caio Rodrigues" />
@@ -158,7 +158,7 @@ for the JavaScript code in this tag.
 </li>
 <li><a href="#sec-1-3">1.3. Building Instructions</a></li>
 <li><a href="#sec-1-4">1.4. Binary release</a></li>
-<li><a href="#sec-1-5">1.5. Tasklist and future work</a></li>
+<li><a href="#sec-1-5">1.5. <span class="todo TODO">TODO</span> Tasklist and future work</a></li>
 </ul>
 </li>
 </ul>
@@ -185,7 +185,8 @@ Features:
 </p>
 
 <ul class="org-ul">
-<li><span class="underline">Self contained</span>: Just-one jar file, intuitive and easy to use.
+<li><span class="underline">Self contained</span>: Just one file, one jar file, self-explanatory and
+easy to use and deploy.
 </li>
 
 <li><span class="underline">No instalation required+</span>, it is ready to use and ready to
@@ -207,15 +208,31 @@ cameras and etc, through zeroconf protocol (aka Apple's
 Bounjour). So it can be located without knowing its network
 address.
 </li>
+
+<li><span class="underline">SSL/TSL protocol support</span> -  TSL (Transport Secure Layer) or SSL
+(Secure Socket Layer). It allows the http traffic between the
+server and browser to be encrypted and secure.
+</li>
+
+<li><span class="underline">Basic Authenticatin login</span> 
+</li>
 </ul>
 
 
 <p>
-<b>WARNING</b>: This server doesn't use SSL/TLS security extension for
-end-to-end encryption and data integrity and doesn't have
-authentication too. So it should not be used to share sensitive files
-on insecure or public local networks.
+<b>WARNING</b>: 
 </p>
+
+<ul class="org-ul">
+<li>The HTTP traffic without TLS/SSL is not encrypted, therefore, don't
+use the server without SSL over the internet or at insecure or
+public local networks.
+</li>
+
+<li>Basic Authentication should not be used without TLS/SSL as the
+password and login are sent unencrypted as plain text.
+</li>
+</ul>
 </div>
 </div>
 
@@ -231,20 +248,62 @@ The Jmhttp server is self-explanatory:
 
 <div class="org-src-container">
 
-<pre class="src src-text">$ bin/jmhttp 
+<pre class="src src-text">$ bin/jmhttp
 A micro Java/Scala http server to share files in the local network
 
 Usage: jmhttp [OPTIONS] ... [[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]
 
-   -h, --help           Display this help and exit
-   --version            Output version information and exit.
-   -p, --port=&lt;port&gt;    Port number that the Http server will listen to. Default 8080
-   --host=&lt;hostname&gt;    Host name that the server listens to. Default value 0.0.0.0
-   -b, --browser        Open server url in default web browser.
-   -m, --multiple       Share multiple directories specified by url1:/dir1, url2:/dir2 ...
-   --loglevel=&lt;level&gt;   Set application log level. [OFF | ALL | FINE | INFO. (Default value INFO)
-   --no-index           Don't render index.html if available in directory listing.
-   --zeroconf           Publish server at local network with bounjour/zeroconf protocol.
+   -h, --help                       Display this help and exit
+   --version                        Output version information and exit.
+   -p, --port=&lt;port&gt;                Port number that the Http server will listen to. Default 8080
+   --host=&lt;hostname&gt;                Host name that the server listens to. Default value 0.0.0.0
+   --tsl=&lt;&lt;key store&gt;:&lt;password&gt;&gt;   Enable TLS/SSL. If it enabled use https:&lt;addr&gt;:&lt;port&gt; to connect.
+   -b, --browser                    Open server url in default web browser.
+   -m, --multiple                   Share multiple directories specified by url1:/dir1, url2:/dir2 ...
+   --loglevel=&lt;level&gt;               Set application log level. [OFF | ALL | FINE | INFO. (Default value INFO)
+   --no-index                       Don't render index.html if available in directory listing.
+   --zeroconf                       Publish server at local network with bounjour/zeroconf protocol.
+
+Examples:
+
+  Share single directory /home/user/Documents at default port 8080
+  listening all hosts.
+
+   &gt; $ jmhttp /home/user/Documents
+  or
+   &gt; $ jmhttp ~/Documents
+
+  Share single address and open server's address with system's default web browser.
+
+  &gt; $ jmhttp --browser ~/Documents
+  or
+  &gt; $ jmhttp -b ~/Documents
+
+  Share single directory using port 9090 - The server can be accessed at url
+  http://localhost:9090 or http://&lt;server addr&gt;:9090
+
+   &gt; $ jmhttp --port=9090 /home/user/Documents
+   &gt; $ jmhttp -p=9090 /home/user/Documents
+
+  Share multiple directories using port 8090 and announcing server
+  through mDNS multicast DNS Discovery service, aka Apple's Bounjour(&#174;)
+  or Zeroconf. It will make the directory Documents available at
+  http:&lt;addr&gt;:8090/docs and ~/Pictures at http:&lt;addr&gt;:8090/pics. Note:
+  the flag (-m) or (--multiple) enables serving multiple directories.
+
+  &gt; $ jmthtp -p=8090 --zeroconf -m docs:~/Documents pics:~/Pictures
+
+  Share multiple directories with tsl/ssl (Transport Socket Layer/
+  Secure Socket Layer) encryption. It changes the server's URL to
+  https://&lt;serveraddr&gt;:8080. It is no longer http://...
+
+  &gt; $ jmhttp -p=8080 --tsl=CertificateFile.jks:password -m docs:~/Documents pics:~/Pictures
+
+  The certificate can be generated using:
+
+  &gt; $ keytool -gerkey -keyalg RSA -alias sec_server \
+    -keystore CertificateFile.jks \
+    -storepass chargeit -validity 1000000 -keysize 2048
 </pre>
 </div>
 </div>
@@ -537,7 +596,7 @@ jmhttp - v1.0
 </div>
 
 <div id="outline-container-sec-1-5" class="outline-3">
-<h3 id="sec-1-5"><span class="section-number-3">1.5</span> Tasklist and future work</h3>
+<h3 id="sec-1-5"><span class="section-number-3">1.5</span> <span class="todo TODO">TODO</span> Tasklist and future work</h3>
 <div class="outline-text-3" id="text-1-5">
 <ul class="org-ul">
 <li><code>[X]</code> - Implement logging
@@ -555,10 +614,13 @@ jmhttp - v1.0
 <li><code>[&#xa0;]</code> - Add cookie-based authentication.
 </li>
 
-<li><code>[&#xa0;]</code> - Supoport HTTPS/TLS security extension.
+<li><code>[X]</code> - Supoport HTTPS/TLS security extension.
 </li>
 
 <li><code>[&#xa0;]</code> - Provide GIT-like subcommands.
+</li>
+
+<li><code>[&#xa0;]</code> - [MAYBE] GUI - Graphical User Interface 
 </li>
 </ul>
 </div>
@@ -567,7 +629,7 @@ jmhttp - v1.0
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Caio Rodrigues</p>
-<p class="date">Created: 2017-11-08 Wed 15:18</p>
+<p class="date">Created: 2017-11-24 Fri 04:01</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

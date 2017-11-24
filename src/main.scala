@@ -30,7 +30,50 @@ object Main{
       name         = "jmhttp",
       version      = "v1.0",
       description  = "A micro Java/Scala http server to share files in the local network",
-      operandsDesc = "[[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]"
+      operandsDesc = "[[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]",
+      exampleText = """
+Examples:
+
+  Share single directory /home/user/Documents at default port 8080
+  listening all hosts.
+
+   > $ jmhttp /home/user/Documents
+  or
+   > $ jmhttp ~/Documents
+
+  Share single address and open server's address with system's default web browser.
+
+  > $ jmhttp --browser ~/Documents
+  or
+  > $ jmhttp -b ~/Documents
+
+  Share single directory using port 9090 - The server can be accessed at url
+  http://localhost:9090 or http://<server addr>:9090
+
+   > $ jmhttp --port=9090 /home/user/Documents
+   > $ jmhttp -p=9090 /home/user/Documents
+
+  Share multiple directories using port 8090 and announcing server
+  through mDNS multicast DNS Discovery service, aka Apple's Bounjour(®)
+  or Zeroconf. It will make the directory Documents available at
+  http:<addr>:8090/docs and ~/Pictures at http:<addr>:8090/pics. Note:
+  the flag (-m) or (--multiple) enables serving multiple directories.
+
+  > $ jmthtp -p=8090 --zeroconf -m docs:~/Documents pics:~/Pictures
+
+  Share multiple directories with tsl/ssl (Transport Socket Layer/
+  Secure Socket Layer) encryption. It changes the server's URL to
+  https://<serveraddr>:8080. It is no longer http://...
+
+  > $ jmhttp -p=8080 --tsl=CertificateFile.jks:password -m docs:~/Documents pics:~/Pictures
+
+  The certificate can be generated using:
+
+  > $ keytool -gerkey -keyalg RSA -alias sec_server \
+    -keystore CertificateFile.jks \
+    -storepass chargeit -validity 1000000 -keysize 2048
+
+"""
     )
 
     parser.addOptionInt(

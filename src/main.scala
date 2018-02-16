@@ -32,7 +32,7 @@ object Main{
 
     val parser = new OptSet(
       name         = "jmhttp",
-      version      = "v1.1",
+      version      = "v1.2",
       description  = "A micro Java/Scala http server to share files on the local network",
       operandsDesc = "[[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]",
       exampleText = """

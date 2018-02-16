@@ -2,14 +2,15 @@ package jmhttp.utils
 
 object Utils{
 
-    def getAllFiles(path: String) : Array[java.nio.file.Path] = {
-      import java.nio.file.{Files, Paths, Path}
-      val root = Paths.get(path)
-      Files.walk(root)
-        .filter(_.toFile.isFile)
-        .toArray
-        .map(p => root relativize p.asInstanceOf[java.nio.file.Path])
-    }
+
+  def getAllFiles(path: String) : Array[java.nio.file.Path] = {
+    import java.nio.file.{Files, Paths, Path}
+    val root = Paths.get(path)
+    Files.walk(root)
+      .filter(_.toFile.isFile)
+      .toArray
+      .map(p => root relativize p.asInstanceOf[java.nio.file.Path])
+  }
 
 
   def withThread(action: => Unit) = {
@@ -43,7 +44,8 @@ object Utils{
     ,*/
   def expandPath(path: String) = {
     val p = path
-      .replaceFirst("~", System.getProperty("user.home"))
+      .replaceFirst("\\.", System.getProperty("user.dir"))
+      .replaceFirst("~", System.getProperty("user.home"))   
     new java.io.File(p).getAbsolutePath()
   }
 

@@ -19,7 +19,11 @@ object Main{
   def parseOperand(oper: String) =
     oper.split(":", 2) match {
       case Array(k, v)
-          =>  ("/" + k, Utils.expandPath(v))
+          =>  {
+            val p = Utils.expandPath(v)
+            println("path = " + p)
+            ("/" + k, p)
+          }
       case _
           => throw new IllegalArgumentException("Error: invalid shared directory, expected <url>:<path> string")
     }
@@ -29,7 +33,7 @@ object Main{
     val parser = new OptSet(
       name         = "jmhttp",
       version      = "v1.1",
-      description  = "A micro Java/Scala http server to share files in the local network",
+      description  = "A micro Java/Scala http server to share files on the local network",
       operandsDesc = "[[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]",
       exampleText = """
 Examples:
@@ -260,7 +264,11 @@ Examples:
       val path     = operands.head
       exitIfFalse(operands.size > 1,  "Error: this mode expects only one operand.")
       exitIfFalse(!dirExists(path),  s"Error: directory ${path} doesn't exist.")
-      server.addRouteDirNav(parser.getOperands().head, "/", showIndex = !noIndex)
+      server.addRouteDirNav(
+        Utils.expandPath(parser.getOperands().head),
+        "/",
+        showIndex = !noIndex
+      )
     }
     else
       try server.addRouteDirsIndex(parser.getOperands() map parseOperand)

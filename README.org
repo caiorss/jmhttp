@@ -330,7 +330,9 @@ jmhttp - v1.0
 
  - [X] - Add Zeroconf - Network Service advertising.
 
- - [ ] - Add basic HTTP authentication.
+ - [X] - Add basic HTTP authentication.
+
+ - [X] - Implement cross-platform path expansion.
 
  - [ ] - Add cookie-based authentication.
 

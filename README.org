@@ -57,66 +57,75 @@ Features:
 ** Usage 
 *** Show help
 
-The Jmhttp server is self-explanatory:
+The Jmhttp server is self-explanatory as it user-help text is
+comprehensive and gives lots of examples.
 
-#+BEGIN_SRC text
-$ bin/jmhttp
-A micro Java/Scala http server to share files in the local network
+#+BEGIN_SRC text 
+  $ jmhttp 
+  A micro Java/Scala http server to share files on the local network
 
-Usage: jmhttp [OPTIONS] ... [[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]
-                                    
-   -h, --help                       Display this help and exit
-   --version                        Output version information and exit.
-   -p, --port=<port>                Port number that the Http server will listen to. Default 8080
-   --host=<hostname>                Host name that the server listens to. Default value 0.0.0.0
-   --tsl=<<key store>:<password>>   Enable TLS/SSL. If it enabled use https:<addr>:<port> to connect.
-   -b, --browser                    Open server url in default web browser.
-   -m, --multiple                   Share multiple directories specified by url1:/dir1, url2:/dir2 ...
-   --loglevel=<level>               Set application log level. [OFF | ALL | FINE | INFO. (Default value INFO)
-   --no-index                       Don't render index.html if available in directory listing.
-   --zeroconf                       Publish server at local network with bounjour/zeroconf protocol.
+  Usage: jmhttp [OPTIONS] ... [[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]
+                                      
+     -h, --help                       Display this help and exit
+     --version                        Output version information and exit.
+     -p, --port=<port>                Port number that the Http server will listen to. Default 8080
+     --host=<hostname>                Host name that the server listens to. Default value 0.0.0.0
+     --auth=<username:password>       Enable basic http authentication with a given user name and password.
+     --tls=<<key store>:<password>>   Enable TLS (Transport Layer Security)/SSL - encrypt connection. Sever URL https:<addr>:<port> to ...
+     -b, --browser                    Open server url in default web browser.
+     -m, --multiple                   Share multiple directories specified by url1:/dir1, url2:/dir2 ...
+     --image                          Show images thumbnails in directory listing.
+     --loglevel=<level>               Set application log level. [OFF | ALL | FINE | INFO. (Default value INFO)
+     --no-index                       Don't render index.html if available in directory listing.
+     --zeroconf                       Publish server at local network with bounjour/zeroconf protocol.
 
-Examples:
+  Examples:
 
-  Share single directory /home/user/Documents at default port 8080
-  listening all hosts.
+    Share single directory /home/user/Documents at default port 8080
+    listening all hosts.
 
-   > $ jmhttp /home/user/Documents
-  or
-   > $ jmhttp ~/Documents
+     > $ jmhttp /home/user/Documents
+    or
+     > $ jmhttp ~/Documents
 
-  Share single address and open server's address with system's default web browser.
+    Share single address and open server's address with system's default web browser.
 
-  > $ jmhttp --browser ~/Documents
-  or
-  > $ jmhttp -b ~/Documents
+    > $ jmhttp --browser ~/Documents
+    or
+    > $ jmhttp -b ~/Documents
 
-  Share single directory using port 9090 - The server can be accessed at url
-  http://localhost:9090 or http://<server addr>:9090
+    Share single directory with basic authentication. It will serve the
+    user home directory (~) tilde or /home/<username> on Linux,
+    /Users/<username> on MacOSX and C:\\Users\<username> on Windows with
+    authentication requesting username john and password pxjmnf.
 
-   > $ jmhttp --port=9090 /home/user/Documents
-   > $ jmhttp -p=9090 /home/user/Documents
+    > $ ./jmhttp.sh -p=8000 --auth=john:pxjmnf ~
 
-  Share multiple directories using port 8090 and announcing server
-  through mDNS multicast DNS Discovery service, aka Apple's Bounjour(®)
-  or Zeroconf. It will make the directory Documents available at
-  http:<addr>:8090/docs and ~/Pictures at http:<addr>:8090/pics. Note:
-  the flag (-m) or (--multiple) enables serving multiple directories.
+    Share single directory using port 9090 - The server can be accessed at url
+    http://localhost:9090 or http://<server addr>:9090
 
-  > $ jmthtp -p=8090 --zeroconf -m docs:~/Documents pics:~/Pictures
+     > $ jmhttp --port=9090 /home/user/Documents
+     > $ jmhttp -p=9090 /home/user/Documents
 
-  Share multiple directories with tsl/ssl (Transport Socket Layer/
-  Secure Socket Layer) encryption. It changes the server's URL to
-  https://<serveraddr>:8080. It is no longer http://...
+    Share multiple directories using port 8090 and announcing server
+    through mDNS multicast DNS Discovery service, aka Apple's Bounjour(®)
+    or Zeroconf. It will make the directory Documents available at
+    http:<addr>:8090/docs and ~/Pictures at http:<addr>:8090/pics. Note:
+    the flag (-m) or (--multiple) enables serving multiple directories.
 
-  > $ jmhttp -p=8080 --tsl=CertificateFile.jks:password -m docs:~/Documents pics:~/Pictures
+    > $ jmthtp -p=8090 --zeroconf -m docs:~/Documents pics:~/Pictures
 
-  The certificate can be generated using:
+    Share multiple directories with tsl/ssl (Transport Layer Security/
+    Secure Socket Layer) encryption. It changes the server's URL to
+    https://<serveraddr>:8080. It is no longer http://...
 
-  > $ keytool -gerkey -keyalg RSA -alias sec_server \
-    -keystore CertificateFile.jks \
-    -storepass chargeit -validity 1000000 -keysize 2048
+    > $ jmhttp -p=8080 --tsl=CertificateFile.jks:password -m docs:~/Documents pics:~/Pictures
 
+    The certificate can be generated using:
+
+    > $ keytool -gerkey -keyalg RSA -alias sec_server \
+      -keystore CertificateFile.jks \
+      -storepass chargeit -validity 1000000 -keysize 2048
 
 #+END_SRC
 

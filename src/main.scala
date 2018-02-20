@@ -126,7 +126,13 @@ Examples:
     parser.addOptionFlag(
       name = "multiple",
       shortName = "m",
-      description = "Share multiple directories specified by url1:/dir1, url2:/dir2 ...")
+      description = "Share multiple directories specified by url1:/dir1, url2:/dir2 ..."
+    )
+
+    parser.addOptionFlag(
+      name = "image",
+      description = "Show images thumbnails in directory listing."
+    )
 
     parser.addOptionStr(
       name       = "loglevel",
@@ -168,6 +174,7 @@ Examples:
     val noIndex    = parser.getOptAsBool   ("no-index")
     val zeroconf   = parser.getOptAsBool   ("zeroconf")
     val auth       = parser.getOptAsStrOpt ("auth")
+    val imageFlag  = parser.getOptAsBool ("image")
 
     if (parser.getOperands().isEmpty)
     {
@@ -261,17 +268,21 @@ Examples:
 
     if (!multiple){
       val operands = parser.getOperands()
-      val path     = operands.head
+      val path     = Utils.expandPath(operands.head)
+      println("path = " + path)
       exitIfFalse(operands.size > 1,  "Error: this mode expects only one operand.")
       exitIfFalse(!dirExists(path),  s"Error: directory ${path} doesn't exist.")
       server.addRouteDirNav(
-        Utils.expandPath(parser.getOperands().head),
+        path,
         "/",
-        showIndex = !noIndex
+        showIndex = !noIndex,
+        showImage = imageFlag
       )
-    }
-    else
-      try server.addRouteDirsIndex(parser.getOperands() map parseOperand)
+    } else
+      try server.addRouteDirsIndex(
+        parser.getOperands() map parseOperand,
+        showImage = imageFlag
+      )
       catch {
         case ex: java.lang.IllegalArgumentException
             =>{
@@ -279,7 +290,6 @@ Examples:
               System.exit(0)
             }
       }
-
     val serverURL =
       Utils.getLocalAddress()
         .map{ addr => if(tslConf.isEmpty)

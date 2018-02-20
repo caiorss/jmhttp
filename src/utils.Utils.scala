@@ -1,7 +1,14 @@
 package jmhttp.utils
 
+/** General utility functions */
 object Utils{
 
+  val imageExtensionList = List(".png", ".jpeg", ".jpg", ".tiff", ".bmp")
+
+  /**  Return true if file is an image file */
+  def isImageFile(file: String) = 
+    imageExtensionList.exists(ext => file.endsWith(ext))
+  
 
   def getAllFiles(path: String) : Array[java.nio.file.Path] = {
     import java.nio.file.{Files, Paths, Path}
@@ -37,16 +44,24 @@ object Utils{
           => path + "/" + segment
     }
 
+  /** Check if running on Windows */
+  def osIsWindows() =
+    System.getProperty("os.name").toLowerCase.startsWith("windows")
+
   /** Expand path to absolute path. 
       -> Expand dot (.) into current directory or $(pwd) on Unix, 
       -> Expand tilde (~) into user home directory. 
       -> Relative paths are expanded to absolute path. 
     ,*/
   def expandPath(path: String) = {
-    val p = path
-      .replaceFirst("\\.", System.getProperty("user.dir"))
-      .replaceFirst("~", System.getProperty("user.home"))   
-    new java.io.File(p).getAbsolutePath()
+    val p1 = path
+      .replace("^\\.", System.getProperty("user.dir"))
+      .replace("~", System.getProperty("user.home"))
+    val p2 = if(osIsWindows())
+      p1.replace("\\", "/")
+    else
+      p1
+    new java.io.File(p2).getAbsolutePath()
   }
 
 

@@ -1,7 +1,7 @@
 package jmhttp.server
 
 import java.net.{InetAddress, ServerSocket, Socket}
-import jmhttp.utils.Utils
+import jmhttp.utils.{Utils, ImageUtils}
 
 class HttpResponse(outStream: java.io.OutputStream){
 
@@ -201,7 +201,12 @@ case class HttpRequest(
   }
 
 
-  def sendDirectoryNavListResponse(rootPath: String, dirPath: String, urlPath: String) = {
+  def sendDirectoryNavListResponse(
+    rootPath: String,
+    dirPath: String,
+    urlPath: String,
+    showImage: Boolean = false
+  ) = {
     def relativePath(root: String, path: String): String = {
       import java.nio.file.{Paths, Path}
       val rp = Paths.get(root)
@@ -227,6 +232,20 @@ case class HttpRequest(
       files foreach { file =>
         val url = Utils.urlBuilder(urlPath, file)
         resp.writeLine(s"<a href='$url'>${file}</a></br></br>")
+
+        if(showImage && Utils.isImageFile(file)){
+          //resp.writeLine(s"<img src='$url' style='max-height: 200px; max-width= 200px;' /></br></br>")
+          val fileAbs = new java.io.File(dirPath, file).getPath()
+          logger.fine("Image file served = " + fileAbs)
+          val img = ImageUtils.scaleFitZoom(
+            ImageUtils.readFile(fileAbs),
+            400,
+            400,
+            1.0
+          )
+          val b64encode = ImageUtils.toBase64String(img)
+          resp.writeLine(s"<img src='data:image/png;base64,$b64encode' style='max-height: 200px; max-width= 200px;' /></br></br>")
+        }
       }
     }
   }
@@ -237,7 +256,8 @@ case class HttpRequest(
     urlPath: String,
     fileURL: String,
     mimeFn:  String => String = Utils.getMimeType,
-    showIndex: Boolean = true 
+    showIndex: Boolean = true,
+    showImage: Boolean = false
   ) = {
 
     this.logger.fine(s"sendDirNavResponse (dirPath = $dirPath, urlPath = $urlPath, fileURL = $fileURL ...) ")
@@ -270,7 +290,8 @@ case class HttpRequest(
               this.sendDirectoryNavListResponse(
                 rootPath = dirPath,
                 dirPath  = file.getAbsolutePath,
-                urlPath  = p
+                urlPath  = p,
+                showImage
               )
             }
           }    
@@ -344,15 +365,24 @@ class HttpServer(
     this.addRoute(rule)
   }
 
-  def addRouteDirNav(dirPath: String, urlPath: String, showIndex: Boolean = true) = {
+  def addRouteDirNav(
+    dirPath: String,
+    urlPath: String,
+    showIndex: Boolean = true,
+    showImage: Boolean = false
+  ) = {
     this.addRouteParamGET(urlPath){ (req: HttpRequest, fileURL: String) =>
       // println("File URL = " + fileURL)
       logger.fine(s"Setting up route: addRouteDirNav(dirPath = $dirPath, urlPath = $urlPath )")
-      req.sendDirNavResponse(dirPath, urlPath, fileURL, showIndex = showIndex)
+      req.sendDirNavResponse(dirPath, urlPath, fileURL, showIndex = showIndex, showImage = showImage)
     }
   }
 
-  def addRouteDirsIndex(urlPaths: Seq[(String, String)], showIndex: Boolean = true) = {
+  def addRouteDirsIndex(
+    urlPaths: Seq[(String, String)],
+    showIndex: Boolean = true,
+    showImage: Boolean = false
+  ) = {
 
     val indexPage = urlPaths.foldLeft(""){ (acc, tpl) =>
       val (dirUrl, dirPath) = tpl
@@ -365,7 +395,7 @@ class HttpServer(
     }
 
     urlPaths foreach { case (dirUrl, dirPath) =>
-      this.addRouteDirNav(dirPath, dirUrl, showIndex = showIndex)
+      this.addRouteDirNav(dirPath, dirUrl, showIndex = showIndex, showImage)
     }
   }
 

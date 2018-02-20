@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>jmHttp Server</title>
-<!-- 2017-11-24 Fri 04:14 -->
+<!-- 2018-02-20 Tue 15:43 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Caio Rodrigues" />
@@ -248,13 +248,14 @@ password and login are sent unencrypted as plain text.
 <h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> Show help</h4>
 <div class="outline-text-4" id="text-1-2-1">
 <p>
-The Jmhttp server is self-explanatory:
+The Jmhttp server is self-explanatory as it user-help text is
+comprehensive and gives lots of examples.
 </p>
 
 <div class="org-src-container">
 
-<pre class="src src-text">$ bin/jmhttp
-A micro Java/Scala http server to share files in the local network
+<pre class="src src-text">$ jmhttp 
+A micro Java/Scala http server to share files on the local network
 
 Usage: jmhttp [OPTIONS] ... [[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]
 
@@ -262,9 +263,11 @@ Usage: jmhttp [OPTIONS] ... [[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]
    --version                        Output version information and exit.
    -p, --port=&lt;port&gt;                Port number that the Http server will listen to. Default 8080
    --host=&lt;hostname&gt;                Host name that the server listens to. Default value 0.0.0.0
-   --tsl=&lt;&lt;key store&gt;:&lt;password&gt;&gt;   Enable TLS/SSL. If it enabled use https:&lt;addr&gt;:&lt;port&gt; to connect.
+   --auth=&lt;username:password&gt;       Enable basic http authentication with a given user name and password.
+   --tls=&lt;&lt;key store&gt;:&lt;password&gt;&gt;   Enable TLS (Transport Layer Security)/SSL - encrypt connection. Sever URL https:&lt;addr&gt;:&lt;port&gt; to ...
    -b, --browser                    Open server url in default web browser.
    -m, --multiple                   Share multiple directories specified by url1:/dir1, url2:/dir2 ...
+   --image                          Show images thumbnails in directory listing.
    --loglevel=&lt;level&gt;               Set application log level. [OFF | ALL | FINE | INFO. (Default value INFO)
    --no-index                       Don't render index.html if available in directory listing.
    --zeroconf                       Publish server at local network with bounjour/zeroconf protocol.
@@ -284,6 +287,13 @@ Examples:
   or
   &gt; $ jmhttp -b ~/Documents
 
+  Share single directory with basic authentication. It will serve the
+  user home directory (~) tilde or /home/&lt;username&gt; on Linux,
+  /Users/&lt;username&gt; on MacOSX and C:\\Users\&lt;username&gt; on Windows with
+  authentication requesting username john and password pxjmnf.
+
+  &gt; $ ./jmhttp.sh -p=8000 --auth=john:pxjmnf ~
+
   Share single directory using port 9090 - The server can be accessed at url
   http://localhost:9090 or http://&lt;server addr&gt;:9090
 
@@ -298,7 +308,7 @@ Examples:
 
   &gt; $ jmthtp -p=8090 --zeroconf -m docs:~/Documents pics:~/Pictures
 
-  Share multiple directories with tsl/ssl (Transport Socket Layer/
+  Share multiple directories with tsl/ssl (Transport Layer Security/
   Secure Socket Layer) encryption. It changes the server's URL to
   https://&lt;serveraddr&gt;:8080. It is no longer http://...
 
@@ -619,7 +629,13 @@ jmhttp - v1.0
 <li><code>[X]</code> - Add Zeroconf - Network Service advertising.
 </li>
 
-<li><code>[&#xa0;]</code> - Add basic HTTP authentication.
+<li><code>[X]</code> - Add basic HTTP authentication.
+</li>
+
+<li><code>[X]</code> - Implement cross-platform path expansion.
+</li>
+
+<li><code>[X]</code> - Implement Image Gallery 
 </li>
 
 <li><code>[&#xa0;]</code> - Add cookie-based authentication.
@@ -631,7 +647,7 @@ jmhttp - v1.0
 <li><code>[&#xa0;]</code> - Provide GIT-like subcommands.
 </li>
 
-<li><code>[&#xa0;]</code> - [MAYBE] GUI - Graphical User Interface 
+<li><code>[&#xa0;]</code> - [MAYBE] GUI - Graphical User Interface
 </li>
 </ul>
 </div>
@@ -640,7 +656,7 @@ jmhttp - v1.0
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Caio Rodrigues</p>
-<p class="date">Created: 2017-11-24 Fri 04:14</p>
+<p class="date">Created: 2018-02-20 Tue 15:43</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

@@ -126,7 +126,13 @@ Examples:
     parser.addOptionFlag(
       name = "multiple",
       shortName = "m",
-      description = "Share multiple directories specified by url1:/dir1, url2:/dir2 ...")
+      description = "Share multiple directories specified by url1:/dir1, url2:/dir2 ..."
+    )
+
+    parser.addOptionFlag(
+      name = "image",
+      description = "Show images thumbnails in directory listing."
+    )
 
     parser.addOptionStr(
       name       = "loglevel",
@@ -168,6 +174,7 @@ Examples:
     val noIndex    = parser.getOptAsBool   ("no-index")
     val zeroconf   = parser.getOptAsBool   ("zeroconf")
     val auth       = parser.getOptAsStrOpt ("auth")
+    val imageFlag  = parser.getOptAsBool ("image")
 
     if (parser.getOperands().isEmpty)
     {
@@ -268,10 +275,14 @@ Examples:
       server.addRouteDirNav(
         path,
         "/",
-        showIndex = !noIndex
+        showIndex = !noIndex,
+        showImage = imageFlag
       )
     } else
-      try server.addRouteDirsIndex(parser.getOperands() map parseOperand)
+      try server.addRouteDirsIndex(
+        parser.getOperands() map parseOperand,
+        showImage = imageFlag
+      )
       catch {
         case ex: java.lang.IllegalArgumentException
             =>{

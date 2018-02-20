@@ -261,16 +261,16 @@ Examples:
 
     if (!multiple){
       val operands = parser.getOperands()
-      val path     = operands.head
+      val path     = Utils.expandPath(operands.head)
+      println("path = " + path)
       exitIfFalse(operands.size > 1,  "Error: this mode expects only one operand.")
       exitIfFalse(!dirExists(path),  s"Error: directory ${path} doesn't exist.")
       server.addRouteDirNav(
-        Utils.expandPath(parser.getOperands().head),
+        path,
         "/",
         showIndex = !noIndex
       )
-    }
-    else
+    } else
       try server.addRouteDirsIndex(parser.getOperands() map parseOperand)
       catch {
         case ex: java.lang.IllegalArgumentException
@@ -279,7 +279,6 @@ Examples:
               System.exit(0)
             }
       }
-
     val serverURL =
       Utils.getLocalAddress()
         .map{ addr => if(tslConf.isEmpty)

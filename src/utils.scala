@@ -44,6 +44,10 @@ object Utils{
           => path + "/" + segment
     }
 
+  /** Check if running on Windows */
+  def osIsWindows() =
+    System.getProperty("os.name").toLowerCase.startsWith("windows")
+
   /** Expand path to absolute path. 
       -> Expand dot (.) into current directory or $(pwd) on Unix, 
       -> Expand tilde (~) into user home directory. 

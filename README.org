@@ -343,11 +343,13 @@ jmhttp - v1.0
 
  - [X] - Implement cross-platform path expansion.
 
+ - [X] - Implement Image Gallery 
+
  - [ ] - Add cookie-based authentication.
 
  - [X] - Supoport HTTPS/TLS security extension.
 
  - [ ] - Provide GIT-like subcommands.
 
- - [ ] - [MAYBE] GUI - Graphical User Interface 
+ - [ ] - [MAYBE] GUI - Graphical User Interface
 

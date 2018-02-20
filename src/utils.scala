@@ -1,6 +1,13 @@
 package jmhttp.utils
 
+/** General utility functions */
 object Utils{
+
+  val imageExtensionList = List(".png", ".jpeg", ".jpg", ".tiff", ".bmp")
+
+  /**  Return true if file is an image file */
+  def isImageFile(file: String) =
+    imageExtensionList.exists(ext => file.endsWith(ext))
 
 
   def getAllFiles(path: String) : Array[java.nio.file.Path] = {

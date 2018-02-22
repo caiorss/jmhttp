@@ -242,6 +242,37 @@ Safari Zeroconf.
 
 [[file:images/screenshot5-mac-osx-bounjour.png][file:images/screenshot5-mac-osx-bounjour.png]]
 
+*** Dealing with Firewalls 
+
+*Dealing with Firewall* 
+
+In order to use the server it is necessary to disable the firewall or
+create a rule to open the port while testing the server.
+
+ + _Dealing with firewall on Windows OS_: To opening the port 8080 on
+   Windows > Windows 2008. Open a console cmd.exe as administrator and
+   copy and paste the command below. - Reference: [[https://wiki.mcneel.com/zoo/zoo5netsh][Open TCP Port 80 using Netsh]]
+
+#+BEGIN_SRC sh 
+  rem Open TCP Port 8080 inbound and outbound
+  netsh advfirewall firewall add rule name="jmhttp port 8080" dir=in action=allow protocol=TCP localport=8080
+#+END_SRC
+
+ 
+  + _Dealing with firewall on Linux OS_ 
+
+#+BEGIN_SRC sh 
+  # Stop firewall temporarily (Fedora) 
+  $ systemctl stop firewalld
+  
+  # Start firewall 
+  $ systemctl start firewalld
+  
+  # Disable Firewall from boot. 
+  $ systemctl disable firewalld
+#+END_SRC
+
+
 ** Building Instructions 
 
 The server requires scala as building dependency and  [[https://github.com/caiorss/jarget][jarget]]  building

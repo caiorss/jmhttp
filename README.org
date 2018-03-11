@@ -380,6 +380,8 @@ jmhttp - v1.0
 
  - [X] - Supoport HTTPS/TLS security extension.
 
+ - [X] - Create Unix daemon wrapper. 
+
  - [ ] - Provide GIT-like subcommands.
 
  - [ ] - [MAYBE] GUI - Graphical User Interface

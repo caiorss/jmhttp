@@ -133,6 +133,12 @@ object Utils{
     "pom"        -> "text/plain",  // java POM xml 
     "properties" -> "text/plain",  // Java property file
 
+    // shell scripts 
+    "sh"         -> "text/plain",  // Unix shell script file
+    "csh"        -> "text/plain",  // BSD shell script 
+    "bat"        -> "text/play",   // Windows' bat scripts
+
+
     "py"         -> "text/plain",  // Python code
     "rb"         -> "text/plain",  // Ruby code
     "m"          -> "text/plain",  // Matlab/Octave code
@@ -141,8 +147,6 @@ object Utils{
     "fs"         -> "text/plain",  // F# / Fsharp code
     "cs"         -> "text/plain",  // C# / Code 
     "desktop"    -> "text/plain",  // *.desktop Linux file 
-    "sh"         -> "text/plain",  // Unix shell script file 
-    "csh"        -> "text/plain",  // BSD shell script 
     "ml"         -> "text/plain",  // OCaml code 
     "el"         -> "text/plain",  // Emacs/Elisp source code
     "org"        -> "text/plain",  // Emacs/Elisp org-mode file.
@@ -161,7 +165,7 @@ object Utils{
     "vcard"      -> "text/vcard",
     "vcf"        -> "text/vcf",
 
-
+    "xml"        -> "text/xml",
     "css"        -> "text/css",
     "html"       -> "text/html",
     "js"         -> "application/x-javascript",

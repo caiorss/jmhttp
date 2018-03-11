@@ -10,3 +10,8 @@ bin/*
 dist/*
 *.log
 /tags
+*.out
+*.jks
+theme/*
+theme
+organize

@@ -59,6 +59,7 @@ test2: $(appjar)
 install:
 	@echo "Installing application "
 	cp -v bin/jmhttp $(installdir)
+	cp -v jmhttp-daemon.sh $(installdir)
 
 uninstall:
 	@echo "Uninstalling application"

@@ -15,7 +15,7 @@
 #------- USER CONFIGURATION ---------------------------#
 
 # Location of jmhttp jar file. 
-programLocation=bin/jmhttp
+programLocation=~/bin/jmhttp
 
 # Directory where the log file will be stored
 mkdir -p ~/logs 

@@ -18,6 +18,7 @@ appjar := bin/$(app).jar
 # ===== R U L E S ========================== ;;
 
 all: $(appjar)
+uber: bin/jmhttp-uber.jar
 
 force: $(src)
 	jarget exec javax.jmdns/jmdns/3.4.1 -- scalac $(src) -d $(appjar)
@@ -27,7 +28,8 @@ $(appjar): $(src)
 
 # Make executable uber-jar not shrunk.
 sh: $(appjar)
-	jarget uber -scala -sh -m $(appjar) -o bin/jmhttp  -p javax.jmdns/jmdns/3.4.1
+	jarget uber -scala -exe uexe -m $(appjar) -o bin/jmhttp  -p javax.jmdns/jmdns/3.4.1
+
 
 # Make executable uber-jar and shrink it with proguard.
 sh-guard: $(appjar) config.pro

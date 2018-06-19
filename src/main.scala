@@ -83,8 +83,19 @@ object Main{
     ).setAction{ res =>
       val port = res.getInt("port", 8080)
       val host = res.getStr("host", "0.0.0.0")
-      val tlsFlag = false 
-      handler(res)
+      val tlsFlag = false
+
+      val auth = Some(res.getStr("auth", "")) flatMap { s =>
+        s.split(":") match {
+          case Array(user, pass)
+              => Some(user, pass)
+          case _
+              => None
+        }
+      }
+      server.setLogin(auth)
+
+      handler(res)      
       val serverURL =
         Utils.getLocalAddress()
           .map{ addr =>

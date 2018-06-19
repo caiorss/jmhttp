@@ -324,13 +324,12 @@ class HttpServer(
   import javax.net.ssl.SSLSession
   import javax.net.ssl.SSLSocket
 
+  /** Socket server */
   private val ssock = if (tsl) {
     val ss = javax.net.ssl.SSLServerSocketFactory.getDefault()
     ss.createServerSocket()
   } else
     new ServerSocket()
-
-  
 
   private val routes = ListBuffer[HttpRoute]()
 
@@ -340,10 +339,11 @@ class HttpServer(
     
   }
 
-
+  /** Add a generic route to the HTTP Server */
   def addRoute(route: HttpRoute) =
     routes.append(route)
 
+  /** Add a route with get request /{route} GET, for instance http://192.168.0.1/books */
   def addRoutePathGET(path: String)(action: HttpRequest => Unit) =
     routes.append(HttpRoute(
       matcher = (req: HttpRequest) => req.method == "GET" && req.path == path,

@@ -62,9 +62,12 @@ case class HttpTransaction(
   logger: java.util.logging.Logger
  ){
   val httpVersion = "HTTP/1.0"
-  type HttpHeaders = Map[String, String]
+  type HttpHeaders = Map[String, String] 
 
-  val HttpRequest(method, path, headers, version, address, _) = request
+  def getMethod()  = request.method
+  def getPath()    = request.path
+  def getAddress() = request.address
+  def getHeaders() = request.headers
 
   def withResponse(
     status:    Int          = 200,
@@ -72,6 +75,7 @@ case class HttpTransaction(
     mimeType:  String       = "text/html",
     headers:   Map[String, String] = Map[String, String]()
   )(fn: HttpResponse => Unit) = {
+    val HttpRequest(method, path, headers, version, address, _) = request
     val resp = response
 
     // Write response line
@@ -98,6 +102,7 @@ case class HttpTransaction(
     headers:   HttpHeaders  = Map[String, String](),
     contentLen: Long         = -1,
   )(fn: HttpResponse => Unit) = {
+    val HttpRequest(method, path, headers, version, address, _) = request
     val resp = this.response 
     // Write response line
     resp.println(s"${httpVersion} ${status} ${statusMsg}")
@@ -120,6 +125,7 @@ case class HttpTransaction(
   /** Send response with http request parameters for debugging. */
   def sendDebugResponse() =
     withResponse(mimeType = "text/plain"){ resp =>
+      val HttpRequest(method, path, headers, version, address, _) = request
       resp.println("Method =  " + method)
       resp.println("Path   =  " + path)
       resp.println()
@@ -129,6 +135,7 @@ case class HttpTransaction(
       }
     }
 
+
   def sendTextResponse(
     text: String,
     status: Int = 200,
@@ -136,16 +143,14 @@ case class HttpTransaction(
     mimeType: String = "text/plain",
     headers: HttpHeaders = Map[String, String]()
   ) = withResponseLen(
-    status = status,
-    statusMsg = statusMsg,
-    mimeType = mimeType,
+    status     = status,
+    statusMsg  = statusMsg,
+    mimeType   = mimeType,
     contentLen = text.getBytes("UTF-8").length,
-    headers = headers,
+    headers    = headers,
   ) { req =>
     req.print(text)
   }
-
-
   
   def send404Response(text: String) = {
     this.sendTextResponse(text, 404, "NOT FOUND")
@@ -159,12 +164,12 @@ case class HttpTransaction(
       headers = Map("Location" -> url)
     )
 
+
   def sendBasicAuth(user: String, passwd: String)(action: HttpTransaction => Unit) = {
     val secret =
       java.util.Base64
         .getEncoder()
         .encodeToString((user + ":" + passwd).getBytes("UTF-8"))
-
     def denyAccess() =
       this.sendTextResponse(
         "Unauthorized Access",
@@ -172,8 +177,7 @@ case class HttpTransaction(
         "UNATHORIZED",
         headers = Map("Www-Authenticate" -> "Basic realm=\"Fake Realm\"")
       )
-
-    val auth = this.headers.get("Authorization")
+    val auth = getHeaders().get("Authorization")
     auth match {
       case None
           => denyAccess()
@@ -374,7 +378,7 @@ class HttpServer(
         else
           req.method == "GET" &&  req.path.startsWith(path)
       },
-      action  = (req: HttpTransaction) => action(req, req.path.stripPrefix(path))
+      action  = (req: HttpTransaction) => action(req, req.getPath().stripPrefix(path))
     )
     this.addRoute(rule)
   }
@@ -406,17 +410,14 @@ class HttpServer(
     showIndex: Boolean = true,
     showImage: Boolean = false
   ) = {
-
     val indexPage = urlPaths.foldLeft(""){ (acc, tpl) =>
       val (dirUrl, dirPath) = tpl
       acc + "\n" + s"Directory: <a href='${dirUrl}'>${dirUrl}</a></br></br>"
     }
-
     this.addRoutePathGET("/"){
       val pageHeader = "<h1>Shared Directories</h1></br>\n"
       _.sendTextResponse(pageHeader + indexPage, mimeType = "text/html")
     }
-
     urlPaths foreach { case (dirUrl, dirPath) =>
       this.addRouteDirNav(dirPath, dirUrl, showIndex = showIndex, showImage)
     }
@@ -490,11 +491,10 @@ class HttpServer(
         }
 
       case None
-          => req.send404Response(s"Error: resource ${req.path} not found")
+          => req.send404Response(s"Error: resource ${req.getPath()} not found")
     }
   }
-
-
+  
   /** Run server handling requests in a thread pool */
   def run(
     port:     Int    = 8080,

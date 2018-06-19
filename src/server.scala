@@ -8,23 +8,23 @@ class HttpResponse(outStream: java.io.OutputStream){
   private val out = new java.io.DataOutputStream(outStream)
   private val crlf = "\r\n"
 
-  def writeLine(line: String = "") = {
+  def print(text: String) = {
+    out.writeBytes(text)
+  }
+  
+  def println(line: String = "") = {
     out.writeBytes(line + crlf)
   }
 
-  def writeLines(lines: String*) = {
-    lines foreach this.writeLine
+  def printLines(lines: String*) = {
+    lines foreach this.println
   }
 
-  def writeHtmlLine(line: String = "") = {
+  def printlnHtml(line: String = "") = {
     out.writeBytes(line + "</br>\n" + crlf)
   }
 
-  def writeText(text: String) = {
-    out.writeBytes(text)
-  }
-
-  def writeStream(from: java.io.InputStream, size: Int = 1024) = {
+  def copyStream(from: java.io.InputStream, size: Int = 1024) = {
     val to = this.out
     // number of bytes read
     var n = 0
@@ -35,7 +35,12 @@ class HttpResponse(outStream: java.io.OutputStream){
     }
   }
 
-  def close() = out.close()
+  def close() =
+    out.close()
+
+  def flush() =
+    out.flush()
+
 
 }
 
@@ -65,18 +70,18 @@ case class HttpRequest(
   )(fn: HttpResponse => Unit) = {
     val resp = new HttpResponse(this.outStream)
 
-    // Write response line 
-    resp.writeLine(s"${httpVersion} ${status} ${statusMsg}")
+    // Write response line
+    resp.println(s"${httpVersion} ${status} ${statusMsg}")
 
-    // Write HTTP Headers 
-    //-------------------------   
-    resp.writeLine("Content-Type:   " + mimeType)
+    // Write HTTP Headers
+    //-------------------------
+    resp.println("Content-Type:   " + mimeType)
     headers foreach { case (k, v) =>
-      resp.writeLine(s"${k}: ${v}")
+      resp.println(s"${k}: ${v}")
     }
 
-    // Empty line separating response line and header from body 
-    resp.writeLine()
+    // Empty line separating response line and header from body
+    resp.println()
 
     fn(resp)
     resp.close()
@@ -90,38 +95,38 @@ case class HttpRequest(
     contentLen: Long         = -1,
   )(fn: HttpResponse => Unit) = {
     val resp = new HttpResponse(this.outStream)
-    // Write response line 
-    resp.writeLine(s"${httpVersion} ${status} ${statusMsg}")
-    // Write HTTP Headers 
-    //-------------------------   
-    resp.writeLine("Content-Type:   " + mimeType)
+    // Write response line
+    resp.println(s"${httpVersion} ${status} ${statusMsg}")
+    // Write HTTP Headers
+    //-------------------------
+    resp.println("Content-Type:   " + mimeType)
     if (contentLen > 0)
-      resp.writeLine("Content-Length: " + contentLen)
+      resp.println("Content-Length: " + contentLen)
 
     headers foreach { case (k, v) =>
       // println("Written header - " + s"${k}: ${v}")
-      resp.writeLine(s"${k}: ${v}")
+      resp.println(s"${k}: ${v}")
     }
-    // Empty line separating response line and header from body 
-    resp.writeLine()   
+    // Empty line separating response line and header from body
+    resp.println()
     fn(resp)
     resp.close()
   }
 
-    
+
 
   /** Send response with http request parameters for debugging. */
   def sendDebugResponse() =
     withResponse(mimeType = "text/plain"){ resp =>
-      resp.writeLine("Method =  " + method)
-      resp.writeLine("Path   =  " + path)
-      resp.writeLine()
-      resp.writeLine("headers = ")
+      resp.println("Method =  " + method)
+      resp.println("Path   =  " + path)
+      resp.println()
+      resp.println("headers = ")
       headers foreach { case (k, v) =>
-        resp.writeLine(s"${k}\t=\t${v}")
+        resp.println(s"${k}\t=\t${v}")
       }
     }
-  
+
 
   def sendTextResponse(
     text: String,
@@ -136,7 +141,7 @@ case class HttpRequest(
     contentLen = text.getBytes("UTF-8").length,
     headers = headers,
   ) { req =>
-    req.writeText(text)
+    req.print(text)
   }
 
   def send404Response(text: String) = {
@@ -174,7 +179,7 @@ case class HttpRequest(
         if (a == "Basic " + secret)
           action(this)
         else
-          denyAccess()        
+          denyAccess()
     }
   }
 
@@ -191,9 +196,9 @@ case class HttpRequest(
         mimeType   = mimeType,
         contentLen = fileSize,
       ){ resp =>
-        resp.writeStream(inp)
+        resp.copyStream(inp)
         inp.close()
-      }     
+      }
     } catch {
       case ex: java.io.FileNotFoundException
           => this.send404Response("Error: file not found in the server.")
@@ -221,17 +226,17 @@ case class HttpRequest(
     val dirs  = contents.filter(_.isDirectory).map(_.getName)
     withResponseLen(){ resp =>
       val p =  Utils.urlBuilder(urlPath, relativePath(rootPath, dirPath))
-      resp.writeLine(s"<h1>Contents of $p</h1>")
-      resp.writeLine("<h2>Directories</h2>")
+      resp.println(s"<h1>Contents of $p</h1>")
+      resp.println("<h2>Directories</h2>")
       dirs foreach { dir =>
         val url = Utils.urlBuilder(urlPath, dir)
         logger.fine(s"DEBUG urlPath = $urlPath ; dir = $dir ; url = ${url} ")
-        resp.writeLine(s"<a href='$url'>$dir</a></br></br>")
+        resp.println(s"<a href='$url'>$dir</a></br></br>")
       }
-      resp.writeLine("<h2>Files</h2>")
+      resp.println("<h2>Files</h2>")
       files foreach { file =>
         val url = Utils.urlBuilder(urlPath, file)
-        resp.writeLine(s"<a href='$url'>${file}</a></br></br>")
+        resp.println(s"<a href='$url'>${file}</a></br></br>")
 
         if(showImage && Utils.isImageFile(file)){
           //resp.writeLine(s"<img src='$url' style='max-height: 200px; max-width= 200px;' /></br></br>")
@@ -244,7 +249,7 @@ case class HttpRequest(
             1.0
           )
           val b64encode = ImageUtils.toBase64String(img)
-          resp.writeLine(s"<img src='data:image/png;base64,$b64encode' style='max-height: 200px; max-width= 200px;' /></br></br>")
+          resp.println(s"<img src='data:image/png;base64,$b64encode' style='max-height: 200px; max-width= 200px;' /></br></br>")
         }
       }
     }

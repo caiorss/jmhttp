@@ -194,8 +194,15 @@ object Main{
    .add(commandMDir)
    .add(commandEcho)
 
-  def main(args: Array[String]) =
+  def main(args: Array[String]) = {
+    // Set the logging format 
+    System.setProperty(
+      "java.util.logging.SimpleFormatter.format",
+      "[%1$tF %1$tT] [%4$s] - %2$s\n - %5$s %6$s%n\n"
+      // "[%1$tF %1$tT] [%4$-7s] %5$s %n"
+    )
     optHandler.parse(args.toList)
+  }
 
 } // ------ EoF Main object ------
 

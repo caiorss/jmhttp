@@ -301,9 +301,13 @@ case class HttpRequest(
 
 } //----  Eof case class HttpRequest ----- //
 
+/** Generic http route
+  * @param matcher - Predicate which matches the HTTP request
+  * @param action  - Action that writes the response when the HTTP request is matched.
+  **/
 case class HttpRoute(
-  val matcher: HttpRequest => Boolean,
-  val action:  HttpRequest => Unit
+  matcher: HttpRequest => Boolean,
+  action:  HttpRequest => Unit
 )
 
 class HttpServer(

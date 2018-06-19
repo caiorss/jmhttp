@@ -104,6 +104,25 @@ object Main{
                )
     }
 
+  val commandMDir =
+    makeServerShareCommand(
+      server,
+      name = "mdir",
+      usage = "<URL1:DIRECTORY1> [<URL2:DIRECTORY2> ...]",
+      desc  = "Share multiple directories."
+    ){ res =>
+      try server.addRouteDirsIndex(
+        res.getOperands() map parseOperand ,
+        showIndex = ! res.getFlag("no-index"),
+        showImage = res.getFlag("image")
+      ) catch {
+        case ex: java.lang.IllegalArgumentException
+            => {
+              println(ex.getMessage())
+              System.exit(0)
+            }
+      }
+    }
 
   val commandEcho = new OptCommand(
     name  = "echo",
@@ -131,6 +150,7 @@ object Main{
     version = "1.4",
     brief   = "{program} {version} - Micro http server for file sharing at local network."
   ).add(commandDir)
+   .add(commandMDir)
    .add(commandEcho)
 
   def main(args: Array[String]) =

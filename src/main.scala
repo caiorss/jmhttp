@@ -80,11 +80,14 @@ object Main{
       name        = "no-index",
       shortName   = "ni",
       desc        = "Don't render index.html if available in directory listing."
+    ).addOpt(
+      name        = "publish",
+      desc        = "Publish server with multicast DNS (aka mdns, Zeroconf protocol.)",
     ).setAction{ res =>
       val port = res.getInt("port", 8080)
       val host = res.getStr("host", "0.0.0.0")
       val tlsFlag = false
-
+      val mdns = res.getFlag("publish")
       val auth = Some(res.getStr("auth", "")) flatMap { s =>
         s.split(":") match {
           case Array(user, pass)
@@ -94,7 +97,6 @@ object Main{
         }
       }
       server.setLogin(auth)
-
       handler(res)      
       val serverURL =
         Utils.getLocalAddress()
@@ -111,6 +113,18 @@ object Main{
             => println("Error: Server address in local network not found")
       }
       // Blocks main thread - listening and handling client sockets
+      if(mdns) Utils.withThread{
+        val intf = NetDiscovery.getActiveInterface()
+        intf foreach NetDiscovery.registerService(
+          serviceType = if(tlsFlag)
+            "_.https._tcp.local"
+          else
+            "_http._tcp.local",
+          serviceName =  "jmhttp server",
+          servicePort =  port,
+          serviceDesc = "Micro Http server for file sharing."
+        )
+      }
       server.run(port = port, host = host)
     }
     cmd

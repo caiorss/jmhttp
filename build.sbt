@@ -3,6 +3,17 @@ import sbt.Package.ManifestAttributes
 // Scala runtime and distribution version
 scalaVersion := "2.12.6"
 
+
+/* Prevents the command $ run in sbt shell from quitting the sbt shell when user hits Ctrl + C 
+ * Reference:
+ *  + https://underscore.io/blog/posts/2015/11/09/sbt-commands.html
+ *  + https://github.com/sbt/sbt/issues/2622
+ *  + 
+ */
+cancelable in Global := true
+fork in run := true
+fork in Test := true
+
 // import sbt.project
 
 //============ Application Specific Settings ===============
@@ -16,6 +27,8 @@ description          := "Micro Http server for file and static html sharing at l
 mainClass in Compile := Some("jmhttp.main.Main")
 // DO NOT add scala version to the produced artifacts
 crossPaths := false
+
+
 
 // Set contents of manifest file => META-INF/MANIFEST.INF
 // Reference: https://github.com/sbt/sbt-assembly/issues/80

@@ -20,3 +20,4 @@ organize
 project/*
 *.html
 target/*
+.idea/*

@@ -71,7 +71,12 @@ object Main{
       desc        = "Host that server will listen to. Default 0.0.0.0 - All addresses."
     ).addOpt(
       name        = "auth",
-      desc        = "Authentication - default empty."
+      desc        = "Authentication - default empty.",
+      argName     = "<USER>:<PASSWORD>"
+    ).addOpt(
+      name        = "tls",
+      argName     = "<KEY STORE>:<PASSWORD>",
+      desc        = "Enable TLS (Transport Layer Security)/SSL. It encrypts connection."
     ).addOpt(
       name        = "image",
       shortName   = "im",
@@ -97,11 +102,28 @@ object Main{
         }
       }
       server.setLogin(auth)
-      handler(res)      
+      handler(res)
+
+      val tls = res.getStr("tsl", "").split(":") match {
+        case Array(keystore, passwd)
+            => {
+              println("Set TSL OK.")
+              System.setProperty("javax.net.ssl.keyStore", Utils.expandPath(keystore))
+              System.setProperty("javax.net.ssl.keyStorePassword", passwd)
+              server.enableTSL()
+              true
+            }
+        case _
+            => {
+              println("TSL not set.")
+              false
+            }
+      }
+
       val serverURL =
         Utils.getLocalAddress()
           .map{ addr =>
-          if(!tlsFlag)
+          if(!tls)
             s"http://${addr}:${port}"
           else
             s"https://${addr}:${port}"
@@ -112,11 +134,12 @@ object Main{
         case None
             => println("Error: Server address in local network not found")
       }
+
       // Blocks main thread - listening and handling client sockets
       if(mdns) Utils.withThread{
         val intf = NetDiscovery.getActiveInterface()
         intf foreach NetDiscovery.registerService(
-          serviceType = if(tlsFlag)
+          serviceType = if(tls)
             "_.https._tcp.local"
           else
             "_http._tcp.local",

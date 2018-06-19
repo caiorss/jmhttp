@@ -491,9 +491,8 @@ class HttpServer(
 
 
   /** Run server in async way with threading. */
-  def run(port: Int = 8080, host: String = "0.0.0.0", timeout: Int = 2000) = {
+  def runThread(port: Int = 8080, host: String = "0.0.0.0", timeout: Int = 2000) = {
     ssock.bind(new java.net.InetSocketAddress(host, port), 60)
-
 
     logger.info(s"Starting server at host = ${host} and port = ${port}")
 

@@ -327,7 +327,7 @@ Examples:
       )
     }
 
-    server.run(port = port, host = host)
+    server.runThread(port = port, host = host)
 
   } //-----EoF main() function ----
 

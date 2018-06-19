@@ -310,10 +310,12 @@ case class HttpRoute(
   action:  HttpRequest => Unit
 )
 
+
+
 class HttpServer(
   logger: java.util.logging.Logger,
-  tsl: Boolean = false,
-  login: Option[(String, String)] = None
+  tsl:    Boolean = false,
+  login:  Option[(String, String)] = None
 ){
 
   import scala.collection.mutable.ListBuffer

@@ -75,7 +75,7 @@ case class HttpTransaction(
     mimeType:  String       = "text/html",
     headers:   Map[String, String] = Map[String, String]()
   )(fn: HttpResponse => Unit) = {
-    val HttpRequest(method, path, headers, version, address, _) = request
+
     val resp = response
 
     // Write response line
@@ -102,7 +102,7 @@ case class HttpTransaction(
     headers:   HttpHeaders  = Map[String, String](),
     contentLen: Long         = -1,
   )(fn: HttpResponse => Unit) = {
-    val HttpRequest(method, path, headers, version, address, _) = request
+
     val resp = this.response 
     // Write response line
     resp.println(s"${httpVersion} ${status} ${statusMsg}")
@@ -137,11 +137,11 @@ case class HttpTransaction(
 
 
   def sendTextResponse(
-    text: String,
-    status: Int = 200,
+    text:      String,
+    status:    Int = 200,
     statusMsg: String = "Ok",
-    mimeType: String = "text/plain",
-    headers: HttpHeaders = Map[String, String]()
+    mimeType:  String = "text/plain",
+    headers:   HttpHeaders = Map[String, String]()
   ) = withResponseLen(
     status     = status,
     statusMsg  = statusMsg,
@@ -172,19 +172,22 @@ case class HttpTransaction(
         .encodeToString((user + ":" + passwd).getBytes("UTF-8"))
     def denyAccess() =
       this.sendTextResponse(
-        "Unauthorized Access",
-        401,
-        "UNATHORIZED",
-        headers = Map("Www-Authenticate" -> "Basic realm=\"Fake Realm\"")
+        text       = "Unauthorized Access",
+        status     = 401,
+        statusMsg  = "UNAUTHORIZED",
+        headers    = Map("Www-Authenticate" -> "Basic realm=\"Fake Realm\"")
       )
     val auth = getHeaders().get("Authorization")
+    logger.info("User authorization = " + auth + " secret " + secret)
     auth match {
       case None
           => denyAccess()
       case Some(a)
           =>
-        if (a == "Basic " + secret)
+        if (a == "Basic " + secret) {
+          logger.info("User authtentication successful")
           action(this)
+        }
         else
           denyAccess()
     }
@@ -321,7 +324,6 @@ case class HttpRoute(
   matcher: HttpRequest => Boolean,
   action:  HttpTransaction => Unit
 )
-
 
 
 class HttpServer(

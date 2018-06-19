@@ -15,3 +15,7 @@ dist/*
 theme/*
 theme
 organize
+/.project
+/.settings/*
+project/*
+*.html

@@ -327,7 +327,7 @@ class HttpServer(
   private var basicAuthLogin: Option[(String, String)] = login
 
   /** Socket server */
-  private val ssock = if (tsl) {
+  private var ssock = if (tsl) {
     val ss = javax.net.ssl.SSLServerSocketFactory.getDefault()
     ss.createServerSocket()
   } else
@@ -343,6 +343,11 @@ class HttpServer(
 
   def setLogin(login: Option[(String, String)]): Unit = {
     this.basicAuthLogin = login
+  }
+
+  def enableTSL(): Unit = {
+    val ss = javax.net.ssl.SSLServerSocketFactory.getDefault()
+    ssock = ss.createServerSocket()
   }
 
   /** Add a generic route to the HTTP Server */

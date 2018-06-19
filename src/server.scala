@@ -490,21 +490,21 @@ class HttpServer(
   }
 
 
-  /** Run server in async way with threading. */
-  def runThread(port: Int = 8080, host: String = "0.0.0.0", timeout: Int = 2000) = {
+  /** Run server handling requests in a thread pool */
+  def run(
+    port:     Int    = 8080,
+    host:     String = "0.0.0.0",
+    timeout:  Int    = 2000,
+    poolSize: Int    = 5
+  ): Unit = {
+    import java.util.concurrent.Executors
+    val threadPool = Executors.newFixedThreadPool(poolSize)
     ssock.bind(new java.net.InetSocketAddress(host, port), 60)
-
     logger.info(s"Starting server at host = ${host} and port = ${port}")
-
-    // ssock.setSoTimeout(timeout)
     while (true) try {
       logger.fine(s"Server waiting for connection.")
-
       val client = this.ssock.accept()
-
-      // val session = client.asInstanceOf[SSLSocket].getSession()
-
-      Utils.withThread{
+      threadPool.execute{() =>
         this.parseRequest(client) foreach { req =>
           logger.info(req.toString())
           this.serveRequest(req)
@@ -518,6 +518,7 @@ class HttpServer(
       case ex: java.io.IOException => ex.printStackTrace()
     }
   }
+
 
 } // ----- Eof class HttpServer ----
 

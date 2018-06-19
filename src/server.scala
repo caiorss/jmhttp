@@ -324,6 +324,8 @@ class HttpServer(
   import javax.net.ssl.SSLSession
   import javax.net.ssl.SSLSocket
 
+  private var basicAuthLogin: Option[(String, String)] = login
+
   /** Socket server */
   private val ssock = if (tsl) {
     val ss = javax.net.ssl.SSLServerSocketFactory.getDefault()
@@ -337,6 +339,10 @@ class HttpServer(
 
   private def init(){
     
+  }
+
+  def setLogin(login: Option[(String, String)]): Unit = {
+    this.basicAuthLogin = login
   }
 
   /** Add a generic route to the HTTP Server */
@@ -413,10 +419,9 @@ class HttpServer(
     this.addRoute(rule)
   }
 
-  /** Accept client socket connection and try to parser HTTP request
-      returning None for an invalid request message.
+  /** Accept client socket connection and try to parser HTTP request returning None for an invalid request message.
     */
-  def parseRequest(client: Socket, verbose: Boolean = false): Option[HttpRequest] = {
+  private def parseRequest(client: Socket, verbose: Boolean = false): Option[HttpRequest] = {
 
     //val client: Socket = ssock.accept()
 
@@ -479,7 +484,7 @@ class HttpServer(
     rule match {
       case Some(r)
           =>
-        login match{
+        basicAuthLogin match{
           case None
               => r.action(req)            
           case Some((user, pass))

@@ -50,25 +50,29 @@ case class HttpRequest(
   headers:   Map[String, String],
   version:   String,
   address:   InetAddress,
-  inpStream: java.io.InputStream,
-  outStream: java.io.OutputStream,
-  logger:    java.util.logging.Logger
+  inpStream: java.io.InputStream  
 ) {
-
-  val httpVersion = "HTTP/1.0"
-
-  type HttpHeaders = Map[String, String]
-
   override def toString() =
     s"HTTP Request: path = ${this.path} - method = ${this.method} - address = ${this.address}"
+} //----  Eof case class HttpRequest ----- //
+
+case class HttpTransaction(
+  request: HttpRequest,
+  response: HttpResponse,
+  logger: java.util.logging.Logger
+ ){
+  val httpVersion = "HTTP/1.0"
+  type HttpHeaders = Map[String, String]
+
+  val HttpRequest(method, path, headers, version, address, _) = request
 
   def withResponse(
     status:    Int          = 200,
     statusMsg: String       = "OK",
     mimeType:  String       = "text/html",
-    headers:   HttpHeaders  = Map[String, String]()
+    headers:   Map[String, String] = Map[String, String]()
   )(fn: HttpResponse => Unit) = {
-    val resp = new HttpResponse(this.outStream)
+    val resp = response
 
     // Write response line
     resp.println(s"${httpVersion} ${status} ${statusMsg}")
@@ -94,7 +98,7 @@ case class HttpRequest(
     headers:   HttpHeaders  = Map[String, String](),
     contentLen: Long         = -1,
   )(fn: HttpResponse => Unit) = {
-    val resp = new HttpResponse(this.outStream)
+    val resp = this.response 
     // Write response line
     resp.println(s"${httpVersion} ${status} ${statusMsg}")
     // Write HTTP Headers
@@ -113,8 +117,6 @@ case class HttpRequest(
     resp.close()
   }
 
-
-
   /** Send response with http request parameters for debugging. */
   def sendDebugResponse() =
     withResponse(mimeType = "text/plain"){ resp =>
@@ -126,7 +128,6 @@ case class HttpRequest(
         resp.println(s"${k}\t=\t${v}")
       }
     }
-
 
   def sendTextResponse(
     text: String,
@@ -144,6 +145,8 @@ case class HttpRequest(
     req.print(text)
   }
 
+
+  
   def send404Response(text: String) = {
     this.sendTextResponse(text, 404, "NOT FOUND")
   }
@@ -156,7 +159,7 @@ case class HttpRequest(
       headers = Map("Location" -> url)
     )
 
-  def sendBasicAuth(user: String, passwd: String)(action: HttpRequest => Unit) = {
+  def sendBasicAuth(user: String, passwd: String)(action: HttpTransaction => Unit) = {
     val secret =
       java.util.Base64
         .getEncoder()
@@ -303,8 +306,8 @@ case class HttpRequest(
     }
   }
 
+} // ---- End of class HttpTransaction ----- // 
 
-} //----  Eof case class HttpRequest ----- //
 
 /** Generic http route
   * @param matcher - Predicate which matches the HTTP request
@@ -312,7 +315,7 @@ case class HttpRequest(
   **/
 case class HttpRoute(
   matcher: HttpRequest => Boolean,
-  action:  HttpRequest => Unit
+  action:  HttpTransaction => Unit
 )
 
 
@@ -329,6 +332,7 @@ class HttpServer(
   import javax.net.ssl.SSLSession
   import javax.net.ssl.SSLSocket
 
+  private val routes = ListBuffer[HttpRoute]()
   private var basicAuthLogin: Option[(String, String)] = login
 
   /** Socket server */
@@ -338,12 +342,8 @@ class HttpServer(
   } else
     new ServerSocket()
 
-  private val routes = ListBuffer[HttpRoute]()
-
   init()
-
-  private def init(){
-    
+  private def init(){   
   }
 
   def setLogin(login: Option[(String, String)]): Unit = {
@@ -360,13 +360,13 @@ class HttpServer(
     routes.append(route)
 
   /** Add a route with get request /{route} GET, for instance http://192.168.0.1/books */
-  def addRoutePathGET(path: String)(action: HttpRequest => Unit) =
+  def addRoutePathGET(path: String)(action: HttpTransaction => Unit) =
     routes.append(HttpRoute(
       matcher = (req: HttpRequest) => req.method == "GET" && req.path == path,
       action  = action
     ))
 
-  def addRouteParamGET(path: String)(action: (HttpRequest, String) => Unit) = {
+  def addRouteParamGET(path: String)(action: (HttpTransaction, String) => Unit) = {
     val rule = HttpRoute(
       matcher = (req: HttpRequest) => {
         if (path == "/")
@@ -374,7 +374,7 @@ class HttpServer(
         else
           req.method == "GET" &&  req.path.startsWith(path)
       },
-      action  = (req: HttpRequest) => action(req, req.path.stripPrefix(path))
+      action  = (req: HttpTransaction) => action(req, req.path.stripPrefix(path))
     )
     this.addRoute(rule)
   }
@@ -382,10 +382,11 @@ class HttpServer(
   def addRouteRedirect(pred: String => Boolean, url: String) = {
     val rule = HttpRoute(
       matcher = (req: HttpRequest) => pred(req.path),
-      action  = (req: HttpRequest) => req.sendRedirect(url)
+      action  = (req: HttpTransaction) => req.sendRedirect(url)
     )
     this.addRoute(rule)
   }
+
 
   def addRouteDirNav(
     dirPath: String,
@@ -393,7 +394,7 @@ class HttpServer(
     showIndex: Boolean = true,
     showImage: Boolean = false
   ) = {
-    this.addRouteParamGET(urlPath){ (req: HttpRequest, fileURL: String) =>
+    this.addRouteParamGET(urlPath){ (req: HttpTransaction, fileURL: String) =>
       // println("File URL = " + fileURL)
       logger.fine(s"Setting up route: addRouteDirNav(dirPath = $dirPath, urlPath = $urlPath )")
       req.sendDirNavResponse(dirPath, urlPath, fileURL, showIndex = showIndex, showImage = showImage)
@@ -424,29 +425,22 @@ class HttpServer(
   def addRouteDebug(path: String = "/debug") = {
     val rule = HttpRoute(
       matcher = (req: HttpRequest) => req.path.startsWith(path),
-      action  = (req: HttpRequest) => req.sendDebugResponse()
+      action  = (req: HttpTransaction) => req.sendDebugResponse()
     )
     this.addRoute(rule)
   }
 
   /** Accept client socket connection and try to parser HTTP request returning None for an invalid request message.
     */
-  private def parseRequest(client: Socket, verbose: Boolean = false): Option[HttpRequest] = {
-
+  private def parseRequest(client: Socket, verbose: Boolean = false): Option[HttpTransaction] = {
     //val client: Socket = ssock.accept()
-
     logger.fine("Get client socket " + client)
-
     def getHeaders(sc: java.util.Scanner) = {
       var headers = Map[String, String]()
-
       var line: String = ""
-
       logger.fine("Parsing client headers")
-
       while({line = sc.nextLine(); line} != ""){
         //logger.fine("Request header line = " + line)      
-
         line.split(":\\s+", 2) match {
           case Array(key, value)
               => headers += key.stripSuffix(":") -> value
@@ -458,39 +452,33 @@ class HttpServer(
       }
       headers
     }
-
     val sc = new java.util.Scanner(client.getInputStream())
-
     if (!sc.hasNextLine()){
       logger.fine("Ignoring empty line request. Client closed.")
       None
     }
     else {
-
       logger.finer("Reading request line")
       val reqline = sc.nextLine()
       logger.fine("Request line = " + reqline)
-
       val Array(httpMethod, urlPath, httpVersion) = reqline.split(" ")
       val headers = getHeaders(sc)
-
       val req = HttpRequest(
         method    = httpMethod,
         path      = urlPath,
         headers   = headers,
         version   = httpVersion,
         address   = client.getInetAddress(),
-        inpStream = client.getInputStream(),
-        outStream = client.getOutputStream(),
-        logger    = this.logger
+        inpStream = client.getInputStream()
       )
-      Some(req)
+      val resp = new HttpResponse(client.getOutputStream())
+      Some(HttpTransaction(req, resp, this.logger))
     }
   } //------ End of getClientRequest() ----- //
 
 
-  def serveRequest(req: HttpRequest) = {
-    val rule = routes.find(r => r.matcher(req))
+  def serveRequest(req: HttpTransaction) = {
+    val rule = routes.find(r => r.matcher(req.request))
     rule match {
       case Some(r)
           =>

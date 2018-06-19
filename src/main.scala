@@ -48,12 +48,18 @@ object Main{
     }
 
 
-  def makeServerShareCommand(server: HttpServer, name: String, usage: String, desc: String)(handler: OptResult => Unit) = {
+  def makeServerShareCommand(
+    server:   HttpServer,
+    name:     String,
+    usage:    String,
+    desc:     String,
+    helpFlag: Boolean = true
+  )(handler: OptResult => Unit) = {
     val cmd = new OptCommand(
-      name  = "dir",
-      usage = "<directory>",
+      name  = name,
+      usage = usage,
       helpFlag = true,
-      desc  = "Share a single directory"
+      desc  = desc
     ).addOpt(
       name        = "port",
       shortName   = "p",

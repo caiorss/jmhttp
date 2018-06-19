@@ -1,8 +1,9 @@
 package jmhttp.main
 
-import jmhttp.server.HttpServer 
-import jmhttp.utils.{Utils, NetDiscovery}
-import com.sftool.optParser.{OptCommand, OptResult, OptParser}
+import jmhttp.server.HttpServer
+import jmhttp.utils.{NetDiscovery, Utils}
+import com.sftool.optParser.{OptCommand, OptParser, OptResult}
+import jmhttp.main.Main.server
 
 object Main{
 
@@ -46,42 +47,57 @@ object Main{
           => throw new IllegalArgumentException("Error: invalid shared directory, expected <url>:<path> string")
     }
 
-  val commandDir = new OptCommand(
-    name  = "dir",
-    usage = "<directory>",
-    helpFlag = true,
-    desc  = "Share a single directory"
-  ).addOpt(
-    name        = "port",
-    shortName   = "p",
-    argName     = "<PORT>",
-    desc        = "Port that server will listen to. Default 8080"
-  ).addOpt(
-    name        = "host",
-    argName     = "<HOST>",
-    desc        = "Host that server will listen to. Default 0.0.0.0 - All addresses."
-  ).addOpt(
-    name        = "auth",
-    desc        = "Authentication - default empty."
-  ).addOpt(
-    name        = "image",
-    shortName   = "m",
-    desc        = "Show images thumbnails in directory listing."
-  ).addOpt(
-    name        = "no-index",
-    desc        = "Don't render index.html if available in directory listing."
-  ).setAction{ res =>
-    val port = res.getInt("port", 8080)
-    val host = res.getStr("host", "0.0.0.0")    
-    val path  = res.getOperandOrError(0, "Error: missing directory parameter.")
-    server.addRouteDirNav(
-      Utils.expandPath(path),
-      "/",
-      showIndex = ! res.getFlag("no-index"),
-      showImage = res.getFlag("image")
-    )
-    server.run(port = port, host = host)
+
+  def makeServerShareCommand(server: HttpServer, name: String, usage: String, desc: String)(handler: OptResult => Unit) = {
+    val cmd = new OptCommand(
+      name  = "dir",
+      usage = "<directory>",
+      helpFlag = true,
+      desc  = "Share a single directory"
+    ).addOpt(
+      name        = "port",
+      shortName   = "p",
+      argName     = "<PORT>",
+      desc        = "Port that server will listen to. Default 8080"
+    ).addOpt(
+      name        = "host",
+      argName     = "<HOST>",
+      desc        = "Host that server will listen to. Default 0.0.0.0 - All addresses."
+    ).addOpt(
+      name        = "auth",
+      desc        = "Authentication - default empty."
+    ).addOpt(
+      name        = "image",
+      shortName   = "im",
+      desc        = "Show images thumbnails in directory listing."
+    ).addOpt(
+      name        = "no-index",
+      shortName   = "ni",
+      desc        = "Don't render index.html if available in directory listing."
+    ).setAction{ res =>
+      val port = res.getInt("port", 8080)
+      val host = res.getStr("host", "0.0.0.0")
+      handler(res)
+      server.run(port = port, host = host)
+    }
+    cmd
   }
+
+  val commandDir =
+    makeServerShareCommand(
+      server,
+      name = "dir",
+      usage = "<DIRECTORY",
+      desc = "Share single directory."){ res =>
+      val path  = res.getOperandOrError(index = 0, errorMsg = "Error: missing directory parameter.")
+      server.addRouteDirNav(
+               Utils.expandPath(path),
+               "/",
+                showIndex = ! res.getFlag("no-index"),
+                showImage = res.getFlag("image")
+               )
+    }
+
 
   val commandEcho = new OptCommand(
     name  = "echo",

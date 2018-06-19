@@ -272,7 +272,7 @@ case class HttpRequest(
 
     file match {
       case _ if !file.exists()
-          => this.send404Response(s"Error: file or directory ${fileURL} not found.")
+          => this.send404Response(s"Error 404: file or directory <${fileURL}> not found.")
 
       case _ if file.isFile()
           =>  this.sendFileResponse(file.getAbsolutePath, mimeFn(file.getAbsolutePath))
@@ -301,15 +301,21 @@ case class HttpRequest(
 
 } //----  Eof case class HttpRequest ----- //
 
+/** Generic http route
+  * @param matcher - Predicate which matches the HTTP request
+  * @param action  - Action that writes the response when the HTTP request is matched.
+  **/
 case class HttpRoute(
-  val matcher: HttpRequest => Boolean,
-  val action:  HttpRequest => Unit
+  matcher: HttpRequest => Boolean,
+  action:  HttpRequest => Unit
 )
+
+
 
 class HttpServer(
   logger: java.util.logging.Logger,
-  tsl: Boolean = false,
-  login: Option[(String, String)] = None
+  tsl:    Boolean = false,
+  login:  Option[(String, String)] = None
 ){
 
   import scala.collection.mutable.ListBuffer
@@ -318,13 +324,12 @@ class HttpServer(
   import javax.net.ssl.SSLSession
   import javax.net.ssl.SSLSocket
 
+  /** Socket server */
   private val ssock = if (tsl) {
     val ss = javax.net.ssl.SSLServerSocketFactory.getDefault()
     ss.createServerSocket()
   } else
     new ServerSocket()
-
-  
 
   private val routes = ListBuffer[HttpRoute]()
 
@@ -334,10 +339,11 @@ class HttpServer(
     
   }
 
-
+  /** Add a generic route to the HTTP Server */
   def addRoute(route: HttpRoute) =
     routes.append(route)
 
+  /** Add a route with get request /{route} GET, for instance http://192.168.0.1/books */
   def addRoutePathGET(path: String)(action: HttpRequest => Unit) =
     routes.append(HttpRoute(
       matcher = (req: HttpRequest) => req.method == "GET" && req.path == path,
@@ -486,22 +492,21 @@ class HttpServer(
   }
 
 
-  /** Run server in async way with threading. */
-  def run(port: Int = 8080, host: String = "0.0.0.0", timeout: Int = 2000) = {
+  /** Run server handling requests in a thread pool */
+  def run(
+    port:     Int    = 8080,
+    host:     String = "0.0.0.0",
+    timeout:  Int    = 2000,
+    poolSize: Int    = 5
+  ): Unit = {
+    import java.util.concurrent.Executors
+    val threadPool = Executors.newFixedThreadPool(poolSize)
     ssock.bind(new java.net.InetSocketAddress(host, port), 60)
-
-
     logger.info(s"Starting server at host = ${host} and port = ${port}")
-
-    // ssock.setSoTimeout(timeout)
     while (true) try {
       logger.fine(s"Server waiting for connection.")
-
       val client = this.ssock.accept()
-
-      // val session = client.asInstanceOf[SSLSocket].getSession()
-
-      Utils.withThread{
+      threadPool.execute{() =>
         this.parseRequest(client) foreach { req =>
           logger.info(req.toString())
           this.serveRequest(req)
@@ -515,6 +520,7 @@ class HttpServer(
       case ex: java.io.IOException => ex.printStackTrace()
     }
   }
+
 
 } // ----- Eof class HttpServer ----
 

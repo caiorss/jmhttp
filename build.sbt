@@ -13,7 +13,7 @@ version              := "1.4"
 // Project description
 description          := "Micro Http server for file and static html sharing at local network."
 // Main class points to the main program entry point:
-// mainClass in Compile := Some("netmon.main.Main")
+mainClass in Compile := Some("jmhttp.main.Main")
 // DO NOT add scala version to the produced artifacts
 crossPaths := false
 
@@ -23,10 +23,10 @@ packageOptions in assembly := Seq(ManifestAttributes(
   ("Main-Class",             "jmhttp.main.Main"),
   ("Built-By",               "dummy team"),
   ("Implementation-Title",   "JmHttp Server"),
-  ("Implementation-Version", "1.0"))
+  ("Implementation-Version", "1.4"))
 )
 
-mergeStrategy in assembly := { case _ => MergeStrategy.first }
+// mergeStrategy in assembly := { case _ => MergeStrategy.first }
 
 //============= Dependencies ================================================
 //
@@ -144,6 +144,5 @@ proguardOptions in Proguard ++= Seq(
 
 )
 
-
 proguardMerge in Proguard := true
-proguardOptions in Proguard += ProguardOptions.keepMain("netmon.main.Main")
+proguardOptions in Proguard += ProguardOptions.keepMain("jmhttp.main.Main")

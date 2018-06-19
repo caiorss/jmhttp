@@ -83,7 +83,23 @@ object Main{
     ).setAction{ res =>
       val port = res.getInt("port", 8080)
       val host = res.getStr("host", "0.0.0.0")
+      val tlsFlag = false 
       handler(res)
+      val serverURL =
+        Utils.getLocalAddress()
+          .map{ addr =>
+          if(!tlsFlag)
+            s"http://${addr}:${port}"
+          else
+            s"https://${addr}:${port}"
+        }
+      serverURL match {
+        case Some(url)
+            => println("Server running at: " + url)
+        case None
+            => println("Error: Server address in local network not found")
+      }
+      // Blocks main thread - listening and handling client sockets
       server.run(port = port, host = host)
     }
     cmd

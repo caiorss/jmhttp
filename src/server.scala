@@ -272,7 +272,7 @@ case class HttpRequest(
 
     file match {
       case _ if !file.exists()
-          => this.send404Response(s"Error: file or directory ${fileURL} not found.")
+          => this.send404Response(s"Error 404: file or directory <${fileURL}> not found.")
 
       case _ if file.isFile()
           =>  this.sendFileResponse(file.getAbsolutePath, mimeFn(file.getAbsolutePath))

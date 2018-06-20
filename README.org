@@ -5,7 +5,6 @@
 #+KEYWRODS: http, web, server, share, files, lan, local, network, java, scala, zeroconf, bonjour, mdns, multicast
 #+STARTUP: content 
 
-
 * jmtthp server - A micro scala/java Http server 
 ** Overview 
 
@@ -61,72 +60,137 @@ The Jmhttp server is self-explanatory as it user-help text is
 comprehensive and gives lots of examples.
 
 #+BEGIN_SRC text 
-  $ jmhttp 
-  A micro Java/Scala http server to share files on the local network
+$ java -jar jmhttp-uber.jar 
+jmhttp 1.4 - Micro http server for file sharing at local network.
+Usage: $ jmhttp [COMMAND] [OPTIONS] [<ARGS> ...]
 
-  Usage: jmhttp [OPTIONS] ... [[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]
-                                      
-     -h, --help                       Display this help and exit
-     --version                        Output version information and exit.
-     -p, --port=<port>                Port number that the Http server will listen to. Default 8080
-     --host=<hostname>                Host name that the server listens to. Default value 0.0.0.0
-     --auth=<username:password>       Enable basic http authentication with a given user name and password.
-     --tls=<<key store>:<password>>   Enable TLS (Transport Layer Security)/SSL - encrypt connection. Sever URL https:<addr>:<port> to ...
-     -b, --browser                    Open server url in default web browser.
-     -m, --multiple                   Share multiple directories specified by url1:/dir1, url2:/dir2 ...
-     --image                          Show images thumbnails in directory listing.
-     --loglevel=<level>               Set application log level. [OFF | ALL | FINE | INFO. (Default value INFO)
-     --no-index                       Don't render index.html if available in directory listing.
-     --zeroconf                       Publish server at local network with bounjour/zeroconf protocol.
+Commands:
 
-  Examples:
+  dir   Share single directory.                 
+  mdir  Share multiple directories.             
+  echo  Run echo server for debugging purposes 
+#+END_SRC
 
-    Share single directory /home/user/Documents at default port 8080
-    listening all hosts.
+Commands: 
 
-     > $ jmhttp /home/user/Documents
-    or
-     > $ jmhttp ~/Documents
+ - dir - Share a single directories:
 
-    Share single address and open server's address with system's default web browser.
+#+BEGIN_SRC text 
+$ java -jar jmhttp-uber.jar dir
+Share single directory.
 
-    > $ jmhttp --browser ~/Documents
-    or
-    > $ jmhttp -b ~/Documents
+USAGE: $ jmhttp dir <DIRECTORY
 
-    Share single directory with basic authentication. It will serve the
-    user home directory (~) tilde or /home/<username> on Linux,
-    /Users/<username> on MacOSX and C:\\Users\<username> on Windows with
+OPTIONS:
+  -port=<PORT>,                  -p   Port that server will listen to. Default 8080                       
+  -host=<HOST>,                  -    Host that server will listen to. Default 0.0.0.0 - All addresses.   
+  -auth=<USER>:<PASSWORD>,       -    Authentication - default empty.                                     
+  -tls=<KEY STORE>:<PASSWORD>,   -    Enable TLS (Transport Layer Security)/SSL. It encrypts connection.  
+  -image,                        -im  Show images thumbnails in directory listing.                        
+  -no-index,                     -ni  Don't render index.html if available in directory listing.          
+  -publish,                      -    Publish server with multicast DNS (aka mdns, Zeroconf protocol.)    
+
+EXAMPLES:
+Share single directory /home/user/Documents at default port 8080
+    listening all hosts. Note: (~) tilde is replaced by /home/<user> on Linux,
+    /User/<user> on OSX and C:\\User\\<user> on Windows.
+
+    > $ jmhttp dir C:\\Users\\user\\Documents  (Windows)
+    > $ jmhttp dir /Users/dummy/documents
+      or
+    > $ jmhttp ~/Documents
+
+    Share single directory with authentication:
+
+    It will serve the user home directory (~) tilde or /home/<username> on Linux,
+    /Users/<username> on MacOSX and C:\\Users\\<username> on Windows with
     authentication requesting username john and password pxjmnf.
+    The server will run on the port 8000.
 
-    > $ ./jmhttp.sh -p=8000 --auth=john:pxjmnf ~
+    Note: Even with authentication is still not safe against network sniffers
+    such as WireShark. To make the server secure, in addition to authentication,
+    it is necessary to use TSL (Transport Secure Layer) option.
+    The server can be opened in the web browser at the URL http://localhost:8080
+    or http://127.0.0.1:8080 or http://computerIP:8080. When the server is using
+    SSL/TLS the server URL is https://<address>:<port>
 
-    Share single directory using port 9090 - The server can be accessed at url
-    http://localhost:9090 or http://<server addr>:9090
+    > $ jmhttp dir -p=8000 -publish -image -auth=john:pxjmnf tls=cert.jks:pass ~
 
-     > $ jmhttp --port=9090 /home/user/Documents
-     > $ jmhttp -p=9090 /home/user/Documents
+    Explanation:
+        + -p=8000             - Set server port to 8000
+        + -publish            - Publish server address on Local network using multicast 
+                                DNS or (Zeroconf / Bounjour)
+        + -auth=john:pxjmnf   - Basic authentication (user john, password pxmnf)
+        + -image              - Show images in the directory listening
+        + -tls=cert.jks:pass  - Use the TSL certificate cert.jks to encrypt the connection.
+                                <pass> is the certificate's password.
+
+    Note: All command line parameters with (-) dash are optional.
+
+
+    A TSL/SLL certificate can be generated on Linux or OSX using:
+
+    $ keytool -genkeypair -keyalg RSA -alias sec_server \
+       -keystore cert.jks \
+       -storepass chargeit -validity 1000000 -keysize 2048
+
+
+#+END_SRC
+
+ - mdir - Share multiple directories:
+
+#+BEGIN_SRC text 
+$ java -jar jmhttp-uber.jar mdir
+Share multiple directories.
+
+USAGE: $ jmhttp mdir <URL1:DIRECTORY1> [<URL2:DIRECTORY2> ...]
+
+OPTIONS:
+  -port=<PORT>,                  -p   Port that server will listen to. Default 8080                       
+  -host=<HOST>,                  -    Host that server will listen to. Default 0.0.0.0 - All addresses.   
+  -auth=<USER>:<PASSWORD>,       -    Authentication - default empty.                                     
+  -tls=<KEY STORE>:<PASSWORD>,   -    Enable TLS (Transport Layer Security)/SSL. It encrypts connection.  
+  -image,                        -im  Show images thumbnails in directory listing.                        
+  -no-index,                     -ni  Don't render index.html if available in directory listing.          
+  -publish,                      -    Publish server with multicast DNS (aka mdns, Zeroconf protocol.)    
+
+EXAMPLES:
 
     Share multiple directories using port 8090 and announcing server
     through mDNS multicast DNS Discovery service, aka Apple's Bounjour(®)
     or Zeroconf. It will make the directory Documents available at
-    http:<addr>:8090/docs and ~/Pictures at http:<addr>:8090/pics. Note:
-    the flag (-m) or (--multiple) enables serving multiple directories.
+    http:<addr>:8090/docs and ~/Pictures at http:<addr>:8090/pics.
 
-    > $ jmthtp -p=8090 --zeroconf -m docs:~/Documents pics:~/Pictures
+    > $ jmthtp -p=8090 -publish docs:~/Documents pics:~/Pictures
 
     Share multiple directories with tsl/ssl (Transport Layer Security/
     Secure Socket Layer) encryption. It changes the server's URL to
     https://<serveraddr>:8080. It is no longer http://...
 
-    > $ jmhttp -p=8080 --tsl=CertificateFile.jks:password -m docs:~/Documents pics:~/Pictures
+    > $ jmhttp -p=8080 --tls=cert.jks:password -m docs:~/Documents pics:~/Pictures
 
-    The certificate can be generated using:
+   To generate the certificate use:
 
-    > $ keytool -gerkey -keyalg RSA -alias sec_server \
-      -keystore CertificateFile.jks \
-      -storepass chargeit -validity 1000000 -keysize 2048
+   $ keytool -genkeypair -keyalg RSA -alias sec_server \
+       -keystore cert.jks \
+       -storepass chargeit -validity 1000000 -keysize 2048
+#+END_SRC
 
+
+ - echo - Run server in echo mode. The server answers all requests
+   by printing back the requests data. This command is useful for 
+   debugging http clients or learning more about http requests.
+
+#+BEGIN_SRC text 
+$ java -jar jmhttp-uber.jar echo -h
+Run echo server for debugging purposes
+
+USAGE: $ jmhttp echo 
+
+OPTIONS:
+  -port,   -p  Port that server will listen to. Default 8080                      
+  -host,   -   Host that server will listen to. Default 0.0.0.0 - All addresses.  
+  -auth,   -   Authentication - default empty. 
 #+END_SRC
 
 *** Running the server 
@@ -164,7 +228,9 @@ Server running at: http://192.168.0.3:8080
 On windows this sever can be run with: 
 
 #+BEGIN_SRC sh 
-$ java -jar jmhttp C:\Users\arch\desktop
+  $ java -jar jmhttp C:\Users\arch\Desktop
+  # or 
+  $ java -jar jmhttp ~/Desktop 
 #+END_SRC
 
 *Example 2*
@@ -228,11 +294,11 @@ Server running at: http://192.168.1.22:8080
 *Example 5* 
 
 Too advertising the server at local network with multicast-DNS, zeroconf
-(that Apple calls Boujour) just add the flag --zeroconf. 
+(that Apple calls Boujour) just add the flag -publish. 
 
 
 #+BEGIN_SRC sh 
- $ bin/jmhttp --zeroconf -p=9090 -m -b opt:/home/archbox/opt pics:/home/archbox/Pictures org:/home/archbox/Documents/wiki 
+  $ bin/jmhttp -publish -p=9090 opt:~/opt pics:~/Pictures org:/home/archbox/Documents/wiki 
 #+END_SRC
 
 The advertising with zeroconf allows the server to be accessed without
@@ -272,8 +338,146 @@ create a rule to open the port while testing the server.
   $ systemctl disable firewalld
 #+END_SRC
 
-
 ** Building Instructions 
+*** Building with sbt 
+
+Make sure the latest sbt is available in the system and run $ sbt makesh
+
+Step 1: Enter project root directory.
+
+#+BEGIN_SRC sh 
+cd <project-directory>
+#+END_SRC
+
+Step 2: Compile with $ sbt makesh. It generates the file ./jmhttp
+which is placed at the project current directory; 
+
+#+BEGIN_SRC sh 
+$ sbt makesh
+[info] Loading settings from idea.sbt,plugins.sbt ...
+[info] Loading global plugins from /home/archbox/.sbt/1.0/plugins
+[info] Loading settings from assembly.sbt ...
+[info] Loading project definition from /home/archbox/Documents/projects/jmhttp.scala/project
+[info] Loading settings from build.sbt ...
+[info] Set current project to jmhttp (in build file:/home/archbox/Documents/projects/jmhttp.scala/)
+[info] Including from cache: jmdns-3.4.1.jar
+[info] Including from cache: jmhttp-1.4.jar
+[info] Including from cache: scala-library.jar
+[info] Checking every *.class/*.jar file's SHA-1.
+[info] Merging files...
+[warn] Merging 'META-INF/INDEX.LIST' with strategy 'discard'
+[warn] Merging 'META-INF/MANIFEST.MF' with strategy 'discard'
+[warn] Merging 'META-INF/maven/javax.jmdns/jmdns/pom.properties' with strategy 'discard'
+[warn] Merging 'META-INF/maven/javax.jmdns/jmdns/pom.xml' with strategy 'discard'
+[warn] Strategy 'discard' was applied to 4 files
+[info] Assembly up to date: /home/archbox/Documents/projects/jmhttp.scala/target/jmhttp-assembly-1.4.jar
+Created  = jmhttp
+Run it with java -jar jmhttp or ./jmhttp or sh jmhttp
+[success] Total time: 4 s, completed Jun 20, 2018 8:48:34 AM
+
+#+END_SRC
+
+Step 3: Test the server. 
+
+#+BEGIN_SRC sh 
+$ du -h jmhttp
+5.4M	jmhttp
+5.4M	total
+
+# Check the header 
+#----------------------
+$ head -n 15 jmhttp
+#!/usr/bin/env sh
+# Check if JAVA_HOME is Set 
+if [ -n "${JAVA_HOME}" ]
+then
+    # Check if JAVA is Installed in this JAVA_HOME
+    if [ -f  "$JAVA_HOME/bin/java" ] ;
+    then
+        "$JAVA_HOME/bin/java" -jar "$0" "$@"
+    # Try to use JAVA from $PATH Variable
+    else
+        # Check if Java is Installed 
+        if hash java 2>/dev/null;
+        then
+            java -jar "$0" "$@"
+        els
+
+#+END_SRC
+
+Step 4: Run the program. 
+
+#+BEGIN_SRC sh 
+# Run as Unix executable 
+#-----------------------------------------------------
+$ ./jmhttp
+jmhttp 1.4 - Micro http server for file sharing at local network.
+Usage: $ jmhttp [COMMAND] [OPTIONS] [<ARGS> ...]
+
+Commands:
+
+  dir   Share single directory.                 
+  mdir  Share multiple directories.             
+  echo  Run echo server for debugging purposes  
+
+# Run as shell script 
+#-----------------------------------------------------
+$ sh jmhttp
+jmhttp 1.4 - Micro http server for file sharing at local network.
+Usage: $ jmhttp [COMMAND] [OPTIONS] [<ARGS> ...]
+
+Commands:
+
+  dir   Share single directory.                 
+  mdir  Share multiple directories.             
+  echo  Run echo server for debugging purposes 
+
+# Run with java -jar 
+#-----------------------------------------------------
+$ java -jar jmhttp
+jmhttp 1.4 - Micro http server for file sharing at local network.
+Usage: $ jmhttp [COMMAND] [OPTIONS] [<ARGS> ...]
+
+Commands:
+
+  dir   Share single directory.                 
+  mdir  Share multiple directories.             
+  echo  Run echo server for debugging purposes
+
+#+END_SRC
+
+Install: 
+
+ - In order to install, it is necessary just to move the server to any
+   directory in the $PATH environment variable. So, in Linux, MacOSX
+   or any other Unix-like OS, the program could be moved to /bin,
+   /usr/bin or ~/bin. 
+
+Once installed, the program can be run without ./ or absolute path ./path/jmhttp: 
+
+#+BEGIN_SRC sh 
+$ jmhttp
+jmhttp 1.4 - Micro http server for file sharing at local network.
+Usage: $ jmhttp [COMMAND] [OPTIONS] [<ARGS> ...]
+  ... ... ... ... .... .... 
+#+END_SRC
+
+To install in the user directory without root permission, it is
+necessary to create the directory: 
+
+#+BEGIN_SRC sh 
+$ mkdir -p ~/bin
+
+# Add this line to the file ~/.bashrc or ~/.bash_profile 
+$ export PATH=$PATH:~/bin
+
+# Move the program to ~/bin
+$ mv jmhttp ~/bin 
+$ chmod +x ~/bin/jmhttp 
+
+#+END_SRC
+
+*** Building with jarget
 
 The server requires scala as building dependency and  [[https://github.com/caiorss/jarget][jarget]]  building
 tool to fetch the dependencies and bundle them with the application.
@@ -382,7 +586,11 @@ jmhttp - v1.0
 
  - [X] - Create Unix daemon wrapper. 
 
- - [ ] - Provide GIT-like subcommands.
+ - [X] - Provide GIT-like subcommands.
 
  - [ ] - [MAYBE] GUI - Graphical User Interface
+
+ - [X] - Create sbt file.
+
+ - [ ] - Implement plain text human-readable configuration file. 
 

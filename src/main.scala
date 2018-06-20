@@ -206,7 +206,7 @@ object Main{
        -keystore cert.jks \
        -storepass chargeit -validity 1000000 -keysize 2048
 
-        """.trim
+        """
     ){ res =>
       val path  = res.getOperandOrError(index = 0, errorMsg = "Error: missing directory parameter.")
       server.addRouteDirNav(
@@ -243,7 +243,7 @@ object Main{
    $ keytool -genkeypair -keyalg RSA -alias sec_server \
        -keystore cert.jks \
        -storepass chargeit -validity 1000000 -keysize 2048
-        """.trim
+        """
     ){ res =>
       try server.addRouteDirsIndex(
         res.getOperands() map parseOperand ,

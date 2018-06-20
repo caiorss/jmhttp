@@ -546,6 +546,8 @@ curl.
 
  - [[https://github.com/caiorss/jmhttp/raw/1feb4ef04f15d8e8c4676f39b495b2eac4b8f473/jmhttp][jmhttp 1.1 Download]]
 
+ - [[https://github.com/caiorss/jmhttp/raw/95d7d04fc43640b2352d3bf10910594729090cd8/jmhttp][jmhttp 1.4 Download]]
+
 #+BEGIN_SRC sh 
 $ curl -O -L https://github.com/caiorss/jmhttp/raw/gh-pages/jmhttp
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current

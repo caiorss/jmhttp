@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>jmHttp Server</title>
-<!-- 2018-02-20 Tue 15:43 -->
+<!-- 2018-06-20 Wed 09:07 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Caio Rodrigues" />
@@ -154,9 +154,15 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#sec-1-2-1">1.2.1. Show help</a></li>
 <li><a href="#sec-1-2-2">1.2.2. Running the server</a></li>
+<li><a href="#sec-1-2-3">1.2.3. Dealing with Firewalls</a></li>
 </ul>
 </li>
-<li><a href="#sec-1-3">1.3. Building Instructions</a></li>
+<li><a href="#sec-1-3">1.3. Building Instructions</a>
+<ul>
+<li><a href="#sec-1-3-1">1.3.1. Building with sbt</a></li>
+<li><a href="#sec-1-3-2">1.3.2. Building with jarget</a></li>
+</ul>
+</li>
 <li><a href="#sec-1-4">1.4. Binary release</a></li>
 <li><a href="#sec-1-5">1.5. <span class="todo TODO">TODO</span> Tasklist and future work</a></li>
 </ul>
@@ -164,7 +170,6 @@ for the JavaScript code in this tag.
 </ul>
 </div>
 </div>
-
 
 <div id="outline-container-sec-1" class="outline-2">
 <h2 id="sec-1"><span class="section-number-2">1</span> jmtthp server - A micro scala/java Http server</h2>
@@ -254,71 +259,152 @@ comprehensive and gives lots of examples.
 
 <div class="org-src-container">
 
-<pre class="src src-text">$ jmhttp 
-A micro Java/Scala http server to share files on the local network
+<pre class="src src-text">$ java -jar jmhttp-uber.jar 
+jmhttp 1.4 - Micro http server for file sharing at local network.
+Usage: $ jmhttp [COMMAND] [OPTIONS] [&lt;ARGS&gt; ...]
 
-Usage: jmhttp [OPTIONS] ... [[DIRECTORY] | [URL:DIRECTORY] [URL:DIRECTORY] ...]
+Commands:
 
-   -h, --help                       Display this help and exit
-   --version                        Output version information and exit.
-   -p, --port=&lt;port&gt;                Port number that the Http server will listen to. Default 8080
-   --host=&lt;hostname&gt;                Host name that the server listens to. Default value 0.0.0.0
-   --auth=&lt;username:password&gt;       Enable basic http authentication with a given user name and password.
-   --tls=&lt;&lt;key store&gt;:&lt;password&gt;&gt;   Enable TLS (Transport Layer Security)/SSL - encrypt connection. Sever URL https:&lt;addr&gt;:&lt;port&gt; to ...
-   -b, --browser                    Open server url in default web browser.
-   -m, --multiple                   Share multiple directories specified by url1:/dir1, url2:/dir2 ...
-   --image                          Show images thumbnails in directory listing.
-   --loglevel=&lt;level&gt;               Set application log level. [OFF | ALL | FINE | INFO. (Default value INFO)
-   --no-index                       Don't render index.html if available in directory listing.
-   --zeroconf                       Publish server at local network with bounjour/zeroconf protocol.
+  dir   Share single directory.                 
+  mdir  Share multiple directories.             
+  echo  Run echo server for debugging purposes
+</pre>
+</div>
 
-Examples:
+<p>
+Commands: 
+</p>
 
-  Share single directory /home/user/Documents at default port 8080
-  listening all hosts.
+<ul class="org-ul">
+<li>dir - Share a single directories:
+</li>
+</ul>
 
-   &gt; $ jmhttp /home/user/Documents
-  or
-   &gt; $ jmhttp ~/Documents
+<div class="org-src-container">
 
-  Share single address and open server's address with system's default web browser.
+<pre class="src src-text">$ java -jar jmhttp-uber.jar dir
+Share single directory.
 
-  &gt; $ jmhttp --browser ~/Documents
-  or
-  &gt; $ jmhttp -b ~/Documents
+USAGE: $ jmhttp dir &lt;DIRECTORY
 
-  Share single directory with basic authentication. It will serve the
-  user home directory (~) tilde or /home/&lt;username&gt; on Linux,
-  /Users/&lt;username&gt; on MacOSX and C:\\Users\&lt;username&gt; on Windows with
-  authentication requesting username john and password pxjmnf.
+OPTIONS:
+  -port=&lt;PORT&gt;,                  -p   Port that server will listen to. Default 8080                       
+  -host=&lt;HOST&gt;,                  -    Host that server will listen to. Default 0.0.0.0 - All addresses.   
+  -auth=&lt;USER&gt;:&lt;PASSWORD&gt;,       -    Authentication - default empty.                                     
+  -tls=&lt;KEY STORE&gt;:&lt;PASSWORD&gt;,   -    Enable TLS (Transport Layer Security)/SSL. It encrypts connection.  
+  -image,                        -im  Show images thumbnails in directory listing.                        
+  -no-index,                     -ni  Don't render index.html if available in directory listing.          
+  -publish,                      -    Publish server with multicast DNS (aka mdns, Zeroconf protocol.)    
 
-  &gt; $ ./jmhttp.sh -p=8000 --auth=john:pxjmnf ~
+EXAMPLES:
+Share single directory /home/user/Documents at default port 8080
+    listening all hosts. Note: (~) tilde is replaced by /home/&lt;user&gt; on Linux,
+    /User/&lt;user&gt; on OSX and C:\\User\\&lt;user&gt; on Windows.
 
-  Share single directory using port 9090 - The server can be accessed at url
-  http://localhost:9090 or http://&lt;server addr&gt;:9090
+    &gt; $ jmhttp dir C:\\Users\\user\\Documents  (Windows)
+    &gt; $ jmhttp dir /Users/dummy/documents
+      or
+    &gt; $ jmhttp ~/Documents
 
-   &gt; $ jmhttp --port=9090 /home/user/Documents
-   &gt; $ jmhttp -p=9090 /home/user/Documents
+    Share single directory with authentication:
 
-  Share multiple directories using port 8090 and announcing server
-  through mDNS multicast DNS Discovery service, aka Apple's Bounjour(&#174;)
-  or Zeroconf. It will make the directory Documents available at
-  http:&lt;addr&gt;:8090/docs and ~/Pictures at http:&lt;addr&gt;:8090/pics. Note:
-  the flag (-m) or (--multiple) enables serving multiple directories.
+    It will serve the user home directory (~) tilde or /home/&lt;username&gt; on Linux,
+    /Users/&lt;username&gt; on MacOSX and C:\\Users\\&lt;username&gt; on Windows with
+    authentication requesting username john and password pxjmnf.
+    The server will run on the port 8000.
 
-  &gt; $ jmthtp -p=8090 --zeroconf -m docs:~/Documents pics:~/Pictures
+    Note: Even with authentication is still not safe against network sniffers
+    such as WireShark. To make the server secure, in addition to authentication,
+    it is necessary to use TSL (Transport Secure Layer) option.
+    The server can be opened in the web browser at the URL http://localhost:8080
+    or http://127.0.0.1:8080 or http://computerIP:8080. When the server is using
+    SSL/TLS the server URL is https://&lt;address&gt;:&lt;port&gt;
 
-  Share multiple directories with tsl/ssl (Transport Layer Security/
-  Secure Socket Layer) encryption. It changes the server's URL to
-  https://&lt;serveraddr&gt;:8080. It is no longer http://...
+    &gt; $ jmhttp dir -p=8000 -publish -image -auth=john:pxjmnf tls=cert.jks:pass ~
 
-  &gt; $ jmhttp -p=8080 --tsl=CertificateFile.jks:password -m docs:~/Documents pics:~/Pictures
+    Explanation:
+        + -p=8000             - Set server port to 8000
+        + -publish            - Publish server address on Local network using multicast 
+                                DNS or (Zeroconf / Bounjour)
+        + -auth=john:pxjmnf   - Basic authentication (user john, password pxmnf)
+        + -image              - Show images in the directory listening
+        + -tls=cert.jks:pass  - Use the TSL certificate cert.jks to encrypt the connection.
+                                &lt;pass&gt; is the certificate's password.
 
-  The certificate can be generated using:
+    Note: All command line parameters with (-) dash are optional.
 
-  &gt; $ keytool -gerkey -keyalg RSA -alias sec_server \
-    -keystore CertificateFile.jks \
-    -storepass chargeit -validity 1000000 -keysize 2048
+
+    A TSL/SLL certificate can be generated on Linux or OSX using:
+
+    $ keytool -genkeypair -keyalg RSA -alias sec_server \
+       -keystore cert.jks \
+       -storepass chargeit -validity 1000000 -keysize 2048
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>mdir - Share multiple directories:
+</li>
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-text">$ java -jar jmhttp-uber.jar mdir
+Share multiple directories.
+
+USAGE: $ jmhttp mdir &lt;URL1:DIRECTORY1&gt; [&lt;URL2:DIRECTORY2&gt; ...]
+
+OPTIONS:
+  -port=&lt;PORT&gt;,                  -p   Port that server will listen to. Default 8080                       
+  -host=&lt;HOST&gt;,                  -    Host that server will listen to. Default 0.0.0.0 - All addresses.   
+  -auth=&lt;USER&gt;:&lt;PASSWORD&gt;,       -    Authentication - default empty.                                     
+  -tls=&lt;KEY STORE&gt;:&lt;PASSWORD&gt;,   -    Enable TLS (Transport Layer Security)/SSL. It encrypts connection.  
+  -image,                        -im  Show images thumbnails in directory listing.                        
+  -no-index,                     -ni  Don't render index.html if available in directory listing.          
+  -publish,                      -    Publish server with multicast DNS (aka mdns, Zeroconf protocol.)    
+
+EXAMPLES:
+
+    Share multiple directories using port 8090 and announcing server
+    through mDNS multicast DNS Discovery service, aka Apple's Bounjour(&#174;)
+    or Zeroconf. It will make the directory Documents available at
+    http:&lt;addr&gt;:8090/docs and ~/Pictures at http:&lt;addr&gt;:8090/pics.
+
+    &gt; $ jmthtp -p=8090 -publish docs:~/Documents pics:~/Pictures
+
+    Share multiple directories with tsl/ssl (Transport Layer Security/
+    Secure Socket Layer) encryption. It changes the server's URL to
+    https://&lt;serveraddr&gt;:8080. It is no longer http://...
+
+    &gt; $ jmhttp -p=8080 --tls=cert.jks:password -m docs:~/Documents pics:~/Pictures
+
+   To generate the certificate use:
+
+   $ keytool -genkeypair -keyalg RSA -alias sec_server \
+       -keystore cert.jks \
+       -storepass chargeit -validity 1000000 -keysize 2048
+</pre>
+</div>
+
+
+<ul class="org-ul">
+<li>echo - Run server in echo mode. The server answers all requests
+by printing back the requests data. This command is useful for 
+debugging http clients or learning more about http requests.
+</li>
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-text">$ java -jar jmhttp-uber.jar echo -h
+Run echo server for debugging purposes
+
+USAGE: $ jmhttp echo 
+
+OPTIONS:
+  -port,   -p  Port that server will listen to. Default 8080                      
+  -host,   -   Host that server will listen to. Default 0.0.0.0 - All addresses.  
+  -auth,   -   Authentication - default empty.
 </pre>
 </div>
 </div>
@@ -378,7 +464,9 @@ On windows this sever can be run with:
 
 <div class="org-src-container">
 
-<pre class="src src-sh">$ java -jar jmhttp C:\Users\arch\desktop
+<pre class="src src-sh">$ java -jar jmhttp C:\Users\arch\Desktop
+<span class="org-comment-delimiter"># </span><span class="org-comment">or </span>
+$ java -jar jmhttp ~/Desktop
 </pre>
 </div>
 
@@ -470,13 +558,13 @@ Server running at: http://192.168.1.22:8080
 
 <p>
 Too advertising the server at local network with multicast-DNS, zeroconf
-(that Apple calls Boujour) just add the flag &#x2013;zeroconf. 
+(that Apple calls Boujour) just add the flag -publish. 
 </p>
 
 
 <div class="org-src-container">
 
-<pre class="src src-sh">$ bin/jmhttp --zeroconf -p=9090 -m -b opt:/home/archbox/opt pics:/home/archbox/Pictures org:/home/archbox/Documents/wiki
+<pre class="src src-sh">$ bin/jmhttp -publish -p=9090 opt:~/opt pics:~/Pictures org:/home/archbox/Documents/wiki
 </pre>
 </div>
 
@@ -494,11 +582,229 @@ Safari Zeroconf.
 </div>
 </div>
 </div>
+
+<div id="outline-container-sec-1-2-3" class="outline-4">
+<h4 id="sec-1-2-3"><span class="section-number-4">1.2.3</span> Dealing with Firewalls</h4>
+<div class="outline-text-4" id="text-1-2-3">
+<p>
+<b>Dealing with Firewall</b> 
+</p>
+
+<p>
+In order to use the server it is necessary to disable the firewall or
+create a rule to open the port while testing the server.
+</p>
+
+<ul class="org-ul">
+<li><span class="underline">Dealing with firewall on Windows OS</span>: To opening the port 8080 on
+Windows &gt; Windows 2008. Open a console cmd.exe as administrator and
+copy and paste the command below. - Reference: <a href="https://wiki.mcneel.com/zoo/zoo5netsh">Open TCP Port 80 using Netsh</a>
+</li>
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">rem Open TCP Port 8080 inbound and outbound
+netsh advfirewall firewall add rule <span class="org-variable-name">name</span>=<span class="org-string">"jmhttp port 8080"</span> <span class="org-variable-name">dir</span>=in <span class="org-variable-name">action</span>=allow <span class="org-variable-name">protocol</span>=TCP <span class="org-variable-name">localport</span>=8080
+</pre>
+</div>
+
+
+<ul class="org-ul">
+<li><span class="underline">Dealing with firewall on Linux OS</span> 
+</li>
+</ul>
+
+<div class="org-src-container">
+
+<pre class="src src-sh"><span class="org-comment-delimiter"># </span><span class="org-comment">Stop firewall temporarily (Fedora) </span>
+$ systemctl stop firewalld
+
+<span class="org-comment-delimiter"># </span><span class="org-comment">Start firewall </span>
+$ systemctl start firewalld
+
+<span class="org-comment-delimiter"># </span><span class="org-comment">Disable Firewall from boot. </span>
+$ systemctl disable firewalld
+</pre>
+</div>
+</div>
+</div>
 </div>
 
 <div id="outline-container-sec-1-3" class="outline-3">
 <h3 id="sec-1-3"><span class="section-number-3">1.3</span> Building Instructions</h3>
 <div class="outline-text-3" id="text-1-3">
+</div><div id="outline-container-sec-1-3-1" class="outline-4">
+<h4 id="sec-1-3-1"><span class="section-number-4">1.3.1</span> Building with sbt</h4>
+<div class="outline-text-4" id="text-1-3-1">
+<p>
+Make sure the latest sbt is available in the system and run $ sbt makesh
+</p>
+
+<p>
+Step 1: Enter project root directory.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh"><span class="org-builtin">cd</span> &lt;project-directory&gt;
+</pre>
+</div>
+
+<p>
+Step 2: Compile with $ sbt makesh. It generates the file ./jmhttp
+which is placed at the project current directory; 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">$ sbt makesh
+[info] Loading settings from idea.sbt,plugins.sbt ...
+[info] Loading global plugins from /home/archbox/.sbt/1.0/plugins
+[info] Loading settings from assembly.sbt ...
+[info] Loading project definition from /home/archbox/Documents/projects/jmhttp.scala/project
+[info] Loading settings from build.sbt ...
+[info] Set current project to jmhttp (<span class="org-keyword">in</span> build file:/home/archbox/Documents/projects/jmhttp.scala/)
+[info] Including from cache: jmdns-3.4.1.jar
+[info] Including from cache: jmhttp-1.4.jar
+[info] Including from cache: scala-library.jar
+[info] Checking every *.class/*.jar file<span class="org-string">'s SHA-1.</span>
+<span class="org-string">[info] Merging files...</span>
+<span class="org-string">[warn] Merging '</span>META-INF/INDEX.LIST<span class="org-string">' with strategy '</span>discard<span class="org-string">'</span>
+<span class="org-string">[warn] Merging '</span>META-INF/MANIFEST.MF<span class="org-string">' with strategy '</span>discard<span class="org-string">'</span>
+<span class="org-string">[warn] Merging '</span>META-INF/maven/javax.jmdns/jmdns/pom.properties<span class="org-string">' with strategy '</span>discard<span class="org-string">'</span>
+<span class="org-string">[warn] Merging '</span>META-INF/maven/javax.jmdns/jmdns/pom.xml<span class="org-string">' with strategy '</span>discard<span class="org-string">'</span>
+<span class="org-string">[warn] Strategy '</span>discard<span class="org-string">' was applied to 4 files</span>
+<span class="org-string">[info] Assembly up to date: /home/archbox/Documents/projects/jmhttp.scala/target/jmhttp-assembly-1.4.jar</span>
+<span class="org-string">Created  = jmhttp</span>
+<span class="org-string">Run it with java -jar jmhttp or ./jmhttp or sh jmhttp</span>
+<span class="org-string">[success] Total time: 4 s, completed Jun 20, 2018 8:48:34 AM</span>
+</pre>
+</div>
+
+<p>
+Step 3: Test the server. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">$ du -h jmhttp
+5.4M    jmhttp
+5.4M    total
+
+<span class="org-comment-delimiter"># </span><span class="org-comment">Check the header </span>
+<span class="org-comment-delimiter">#</span><span class="org-comment">----------------------</span>
+$ head -n 15 jmhttp
+<span class="org-comment-delimiter">#</span><span class="org-comment">!/usr/bin/env sh</span>
+<span class="org-comment-delimiter"># </span><span class="org-comment">Check if JAVA_HOME is Set </span>
+<span class="org-keyword">if</span> [ -n <span class="org-string">"${JAVA_HOME}"</span> ]
+<span class="org-keyword">then</span>
+    <span class="org-comment-delimiter"># </span><span class="org-comment">Check if JAVA is Installed in this JAVA_HOME</span>
+    <span class="org-keyword">if</span> [ -f  <span class="org-string">"$JAVA_HOME/bin/java"</span> ] ;
+    <span class="org-keyword">then</span>
+        <span class="org-string">"$JAVA_HOME/bin/java"</span> -jar <span class="org-string">"$0"</span> <span class="org-string">"$@"</span>
+    <span class="org-comment-delimiter"># </span><span class="org-comment">Try to use JAVA from $PATH Variable</span>
+    <span class="org-keyword">else</span>
+        <span class="org-comment-delimiter"># </span><span class="org-comment">Check if Java is Installed </span>
+        <span class="org-keyword">if </span><span class="org-builtin">hash</span> java 2&gt;/dev/null;
+        <span class="org-keyword">then</span>
+            java -jar <span class="org-string">"$0"</span> <span class="org-string">"$@"</span>
+        els
+</pre>
+</div>
+
+<p>
+Step 4: Run the program. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh"><span class="org-comment-delimiter"># </span><span class="org-comment">Run as Unix executable </span>
+<span class="org-comment-delimiter">#</span><span class="org-comment">-----------------------------------------------------</span>
+$ ./jmhttp
+jmhttp 1.4 - Micro http server for file sharing at local network.
+<span class="org-function-name">Usage</span>: $ jmhttp [COMMAND] [OPTIONS] [&lt;ARGS&gt; ...]
+
+<span class="org-function-name">Commands</span>:
+
+  dir   Share single directory.                 
+  mdir  Share multiple directories.             
+  <span class="org-builtin">echo</span>  Run echo server for debugging purposes  
+
+<span class="org-comment-delimiter"># </span><span class="org-comment">Run as shell script </span>
+<span class="org-comment-delimiter">#</span><span class="org-comment">-----------------------------------------------------</span>
+$ sh jmhttp
+jmhttp 1.4 - Micro http server for file sharing at local network.
+<span class="org-function-name">Usage</span>: $ jmhttp [COMMAND] [OPTIONS] [&lt;ARGS&gt; ...]
+
+<span class="org-function-name">Commands</span>:
+
+  dir   Share single directory.                 
+  mdir  Share multiple directories.             
+  <span class="org-builtin">echo</span>  Run echo server for debugging purposes 
+
+<span class="org-comment-delimiter"># </span><span class="org-comment">Run with java -jar </span>
+<span class="org-comment-delimiter">#</span><span class="org-comment">-----------------------------------------------------</span>
+$ java -jar jmhttp
+jmhttp 1.4 - Micro http server for file sharing at local network.
+<span class="org-function-name">Usage</span>: $ jmhttp [COMMAND] [OPTIONS] [&lt;ARGS&gt; ...]
+
+<span class="org-function-name">Commands</span>:
+
+  dir   Share single directory.                 
+  mdir  Share multiple directories.             
+  <span class="org-builtin">echo</span>  Run echo server for debugging purposes
+</pre>
+</div>
+
+<p>
+Install: 
+</p>
+
+<ul class="org-ul">
+<li>In order to install, it is necessary just to move the server to any
+directory in the $PATH environment variable. So, in Linux, MacOSX
+or any other Unix-like OS, the program could be moved to /bin,
+/usr/bin or ~/bin. 
+</li>
+</ul>
+
+<p>
+Once installed, the program can be run without ./ or absolute path ./path/jmhttp: 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">$ jmhttp
+jmhttp 1.4 - Micro http server for file sharing at local network.
+<span class="org-function-name">Usage</span>: $ jmhttp [COMMAND] [OPTIONS] [&lt;ARGS&gt; ...]
+  ... ... ... ... .... ....
+</pre>
+</div>
+
+<p>
+To install in the user directory without root permission, it is
+necessary to create the directory: 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">$ mkdir -p ~/bin
+
+<span class="org-comment-delimiter"># </span><span class="org-comment">Add this line to the file ~/.bashrc or ~/.bash_profile </span>
+$ export <span class="org-variable-name">PATH</span>=$<span class="org-variable-name">PATH</span>:~/bin
+
+<span class="org-comment-delimiter"># </span><span class="org-comment">Move the program to ~/bin</span>
+$ mv jmhttp ~/bin 
+$ chmod +x ~/bin/jmhttp
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-3-2" class="outline-4">
+<h4 id="sec-1-3-2"><span class="section-number-4">1.3.2</span> Building with jarget</h4>
+<div class="outline-text-4" id="text-1-3-2">
 <p>
 The server requires scala as building dependency and  <a href="https://github.com/caiorss/jarget">jarget</a>  building
 tool to fetch the dependencies and bundle them with the application.
@@ -573,6 +879,7 @@ $ rm -rf /home/archbox/.jarget
 </div>
 </div>
 </div>
+</div>
 
 <div id="outline-container-sec-1-4" class="outline-3">
 <h3 id="sec-1-4"><span class="section-number-3">1.4</span> Binary release</h3>
@@ -644,10 +951,19 @@ jmhttp - v1.0
 <li><code>[X]</code> - Supoport HTTPS/TLS security extension.
 </li>
 
-<li><code>[&#xa0;]</code> - Provide GIT-like subcommands.
+<li><code>[X]</code> - Create Unix daemon wrapper. 
+</li>
+
+<li><code>[X]</code> - Provide GIT-like subcommands.
 </li>
 
 <li><code>[&#xa0;]</code> - [MAYBE] GUI - Graphical User Interface
+</li>
+
+<li><code>[X]</code> - Create sbt file.
+</li>
+
+<li><code>[&#xa0;]</code> - Implement plain text human-readable configuration file. 
 </li>
 </ul>
 </div>
@@ -656,7 +972,7 @@ jmhttp - v1.0
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Caio Rodrigues</p>
-<p class="date">Created: 2018-02-20 Tue 15:43</p>
+<p class="date">Created: 2018-06-20 Wed 09:07</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

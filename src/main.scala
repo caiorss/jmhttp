@@ -53,13 +53,15 @@ object Main{
     name:     String,
     usage:    String,
     desc:     String,
+    example:  String = "",
     helpFlag: Boolean = true
   )(handler: OptResult => Unit) = {
     val cmd = new OptCommand(
       name  = name,
       usage = usage,
       helpFlag = true,
-      desc  = desc
+      desc  = desc,
+      example = example
     ).addOpt(
       name        = "port",
       shortName   = "p",
@@ -158,7 +160,54 @@ object Main{
       server,
       name = "dir",
       usage = "<DIRECTORY",
-      desc = "Share single directory."){ res =>
+      desc = "Share single directory.",
+      example =
+        """
+    Share single directory /home/user/Documents at default port 8080
+    listening all hosts. Note: (~) tilde is replaced by /home/<user> on Linux,
+    /User/<user> on OSX and C:\\User\\<user> on Windows.
+
+    > $ jmhttp dir C:\\Users\\user\\Documents  (Windows)
+    > $ jmhttp dir /Users/dummy/documents
+      or
+    > $ jmhttp ~/Documents
+
+    Share single directory with authentication:
+
+    It will serve the user home directory (~) tilde or /home/<username> on Linux,
+    /Users/<username> on MacOSX and C:\\Users\\<username> on Windows with
+    authentication requesting username john and password pxjmnf.
+    The server will run on the port 8000.
+
+    Note: Even with authentication is still not safe against network sniffers
+    such as WireShark. To make the server secure, in addition to authentication,
+    it is necessary to use TSL (Transport Secure Layer) option.
+    The server can be opened in the web browser at the URL http://localhost:8080
+    or http://127.0.0.1:8080 or http://computerIP:8080. When the server is using
+    SSL/TLS the server URL is https://<address>:<port>
+
+    > $ jmhttp dir -p=8000 -publish -image -auth=john:pxjmnf tls=cert.jks:pass ~
+
+    Explanation:
+        + -p=8000             - Set server port to 8000
+        + -publish            - Publish server address on Local network using multicast 
+                                DNS or (Zeroconf / Bounjour)
+        + -auth=john:pxjmnf   - Basic authentication (user john, password pxmnf)
+        + -image              - Show images in the directory listening
+        + -tls=cert.jks:pass  - Use the TSL certificate cert.jks to encrypt the connection.
+                                <pass> is the certificate's password.
+
+    Note: All command line parameters with (-) dash are optional.
+
+
+    A TSL/SLL certificate can be generated on Linux or OSX using:
+
+    $ keytool -genkeypair -keyalg RSA -alias sec_server \
+       -keystore cert.jks \
+       -storepass chargeit -validity 1000000 -keysize 2048
+
+        """.trim
+    ){ res =>
       val path  = res.getOperandOrError(index = 0, errorMsg = "Error: missing directory parameter.")
       server.addRouteDirNav(
                Utils.expandPath(path),
@@ -171,9 +220,30 @@ object Main{
   val commandMDir =
     makeServerShareCommand(
       server,
-      name = "mdir",
-      usage = "<URL1:DIRECTORY1> [<URL2:DIRECTORY2> ...]",
-      desc  = "Share multiple directories."
+      name    = "mdir",
+      usage   = "<URL1:DIRECTORY1> [<URL2:DIRECTORY2> ...]",
+      desc    = "Share multiple directories.",
+      example =
+        """
+    Share multiple directories using port 8090 and announcing server
+    through mDNS multicast DNS Discovery service, aka Apple's Bounjour(®)
+    or Zeroconf. It will make the directory Documents available at
+    http:<addr>:8090/docs and ~/Pictures at http:<addr>:8090/pics.
+
+    > $ jmthtp -p=8090 -publish docs:~/Documents pics:~/Pictures
+
+    Share multiple directories with tsl/ssl (Transport Layer Security/
+    Secure Socket Layer) encryption. It changes the server's URL to
+    https://<serveraddr>:8080. It is no longer http://...
+
+    > $ jmhttp -p=8080 --tls=cert.jks:password -m docs:~/Documents pics:~/Pictures
+
+   To generate the certificate use:
+
+   $ keytool -genkeypair -keyalg RSA -alias sec_server \
+       -keystore cert.jks \
+       -storepass chargeit -validity 1000000 -keysize 2048
+        """.trim
     ){ res =>
       try server.addRouteDirsIndex(
         res.getOperands() map parseOperand ,

@@ -3,7 +3,6 @@ import sbt.Package.ManifestAttributes
 // Scala runtime and distribution version
 scalaVersion := "2.12.6"
 
-
 /* Prevents the command $ run in sbt shell from quitting the sbt shell when user hits Ctrl + C 
  * Reference:
  *  + https://underscore.io/blog/posts/2015/11/09/sbt-commands.html
@@ -106,9 +105,85 @@ copyUber := {
   println("Created  = " + outFile)
 }
 
+/** Command to generate Unix executable, Unix shell script with uber jar payload. 
+  * It allows the java program to be run with ./program without java -jar <program.jar> or 
+  *  java -cp <program.jar> org.path.MainClass. To generate the UYnix executable enter
+  *  $ sbt makesh or $ makesh in the sbt shell.
+  * 
+  *  In this case it will generate the program ./jmhttp at the current project's root directory.
+  */
+val makesh = TaskKey[Unit]("makesh", "Create an Unix executable file")
+makesh := {
+  import java.io.File
+  def copyStream(from: java.io.InputStream, to: java.io.OutputStream) =
+    try {
+      // number of bytes read
+      var n = 0
+      // Buffer with 1024 bytes or 1MB
+      val buf = new Array[Byte](1024)
+      while( {n = from.read(buf) ; n} > 0 ){
+        to.write(buf, 0, n)
+      }
+    } finally {
+      from.close()
+    }
+  val payload = """#!/usr/bin/env sh
+# Check if JAVA_HOME is Set 
+if [ -n "${JAVA_HOME}" ]
+then
+    # Check if JAVA is Installed in this JAVA_HOME
+    if [ -f  "$JAVA_HOME/bin/java" ] ;
+    then
+        "$JAVA_HOME/bin/java" -jar "$0" "$@"
+    # Try to use JAVA from $PATH Variable
+    else
+        # Check if Java is Installed 
+        if hash java 2>/dev/null;
+        then
+            java -jar "$0" "$@"
+        else
+            echo "Error: Java not available in PATH variable or in \$JAVA_HOME"
+            echo "Make sure Java is installed"
+            exit 1
+        fi 
+    fi 
+else
+    # Check if Java is Installed 
+    if hash java 2>/dev/null;
+    then
+        java -jar "$0" "$@"
+    else
+        echo "Error: Java not available in PATH variable"
+        echo "Make sure Java is installed"
+        exit 1
+    fi     
+fi
+exit 0
+"""
+  val outFile = name.value // + ".sh"
+    //println("Output file = " + outFile)
+  val inpFile = new File(assembly.value.getPath)
+  val fos = new java.io.FileOutputStream(outFile)
+  val inch = new java.io.FileInputStream(inpFile)
+  val payloadStream = new java.io.ByteArrayInputStream(payload.getBytes("utf-8"))
+  copyStream(payloadStream, fos)
+  copyStream(inch, fos)
+  // Release acquired resources 
+  payloadStream.close()
+  inch.close()
+  fos.close()
+  // Mark Unix shell script as executable 
+  java.lang.Runtime.getRuntime().exec("chmod u+x " + outFile)
+  println("Created  = " + outFile)
+  println(s"Run it with java -jar $outFile or ./$outFile or sh $outFile")
+}
+
+
 
 //================ Plugins =========================//
 
+
+//----------- Proguard configuration ---------------// 
 // Proguard 
 //  -> See:
 //  + https://github.com/sbt/sbt-proguard/issues/27
@@ -159,3 +234,5 @@ proguardOptions in Proguard ++= Seq(
 
 proguardMerge in Proguard := true
 proguardOptions in Proguard += ProguardOptions.keepMain("jmhttp.main.Main")
+
+

@@ -10,8 +10,8 @@ scalaVersion := "2.12.6"
  *  + 
  */
 cancelable in Global := true
-fork in run := true
-fork in Test := true
+fork in run          := true
+fork in Test         := true
 
 // import sbt.project
 

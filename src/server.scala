@@ -33,6 +33,7 @@ class HttpResponseWriter(outStream: java.io.OutputStream){
     while( {n = from.read(buf) ; n} > 0 ){
       to.write(buf, 0, n)
     }
+    from.close()
   }
 
   def close() =

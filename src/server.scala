@@ -465,14 +465,6 @@ class HttpServer(
   //   this.addRoute(rule)
   // }
 
-    }
-    this.addRoutePathGET("/"){
-      val pageHeader = "<h1>Shared Directories</h1></br>\n"
-      _.sendTextResponse(pageHeader + indexPage, mimeType = "text/html")
-    }
-    urlPaths foreach { case (dirUrl, dirPath) =>
-      this.addRouteDirNav(dirPath, dirUrl, showIndex = showIndex, showImage)
-    }
   def writeResponse(w: HttpResponseWriter, resp: HttpResponse) =  try {
       val httpVersion =  "HTTP/1.0"
       // val w = new HttpResponseWriter(out)

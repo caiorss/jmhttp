@@ -397,11 +397,11 @@ class HttpServer(
     routes.append(route)
 
   /** Add a route with get request /{route} GET, for instance http://192.168.0.1/books */
-  // def addRoutePathGET(path: String)(action: HttpTransaction => Unit) =
-  //   routes.append(HttpRoute(
-  //     matcher = (req: HttpRequest) => req.method == "GET" && req.path == path,
-  //     action  = action
-  //   ))
+  def addRoutePathGET(predicate: HttpRequest => Boolean)(action: HttpRequest => HttpResponse) =
+    routes.append(HttpRoute(
+      matcher = (req: HttpRequest) => req.method == "GET" && predicate(req),
+      action  = action
+    ))
 
   // def addRouteParamGET(path: String)(action: (HttpTransaction, String) => Unit) = {
   //   val rule = HttpRoute(

@@ -320,10 +320,26 @@ case class HttpTransaction(
   * @param matcher - Predicate which matches the HTTP request
   * @param action  - Action that writes the response when the HTTP request is matched.
   **/
-case class HttpRoute(
-  matcher: HttpRequest => Boolean,
-  action:  HttpTransaction => Unit
-)
+trait HttpRoute{
+  def matcher(rq: HttpRequest):    Boolean
+  def action(tr: HttpTransaction): Unit
+}
+
+object HttpRoute{
+  def apply(
+    matcher: HttpRequest => Boolean,
+    action:  HttpTransaction => Unit
+  ) = {
+    val m = matcher
+    val a = action
+    new HttpRoute{
+      def matcher(rq: HttpRequest) =
+        m(rq)
+      def action(tr:  HttpTransaction) =
+        a(tr)
+    }
+  }
+}
 
 
 class HttpServer(

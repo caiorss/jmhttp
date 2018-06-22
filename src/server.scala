@@ -80,15 +80,11 @@ case class HttpRequest(
     s"HTTP Request: path = ${this.path} - method = ${this.method} - address = ${this.address}"
 } //----  Eof case class HttpRequest ----- //
 
-case class HttpTransaction(
+case class HttpContext(
                             request:  HttpRequest,
                             response: HttpResponseWriter,
                             logger:   java.util.logging.Logger
- ){
-
-
-} // ---- End of class HttpTransaction ----- //
-
+  )
 
 /** Generic http route
   * @param matcher - Predicate which matches the HTTP request
@@ -468,7 +464,7 @@ class HttpServer(
   /** Accept client socket connection and try to parser HTTP request.
     * It returns None for an invalid request message.
     ******************************************************************/
-  private def parseRequest(client: Socket, verbose: Boolean = false): Option[HttpTransaction] = {
+  private def parseRequest(client: Socket, verbose: Boolean = false): Option[HttpContext] = {
     //val client: Socket = ssock.accept()
     logger.fine("Get client socket " + client)
     def getHeaders(sc: java.util.Scanner) = {
@@ -508,12 +504,12 @@ class HttpServer(
         inpStream = client.getInputStream()
       )
       val resp = new HttpResponseWriter(client.getOutputStream())
-      Some(HttpTransaction(req, resp, this.logger))
+      Some(HttpContext(req, resp, this.logger))
     }
   } //------ End of getClientRequest() ----- //
 
 
-  def serveRequest(tra: HttpTransaction) = {
+  def serveRequest(tra: HttpContext) = {
     val rule: Option[HttpRoute] = routes.find(r => r.matcher(tra.request))
     rule match {
       case None

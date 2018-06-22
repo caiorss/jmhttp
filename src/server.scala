@@ -591,3 +591,34 @@ class HttpServer(
 
 } // ----- Eof class HttpServer ----
 
+object HttpServer{
+  def makeSimple() = {
+    val logger = java.util.logging.Logger.getLogger("jmhttp")
+    new HttpServer(logger)
+  }
+
+  def main(array: Array[String]) = {
+    val server = makeSimple()
+
+    array.toList match{
+      case List("echo") => {
+        server.addRouteEcho("/")
+      }
+
+      case List("file") => {
+        val fileRoute = HttpRoute(
+          req => true,
+          req => ResponseUtils.fileResponse("/etc/protocols", "text/plain")
+        )
+        server.addRoute(fileRoute)
+      }
+
+      case _ => {
+        println("Error: invalid option.")
+        System.exit(1)
+      }
+    }
+
+    server.run(port  = 9090)
+  }
+}

@@ -360,6 +360,84 @@ object HttpRoute{
         m(rq)
       def action(tr:  HttpTransaction) =
         a(tr)
+
+object ResponseUtils{
+  def textResponse(
+    text:            String,
+    status:          Int = 200,
+    statusMessage:   String = "OK"
+  ) = HttpResponse(
+    statusCode    = status,
+    statusMessage = statusMessage,
+    mimeType      = "text/plain",
+    headers       = Map(),
+    body          = ResponseBodyText(text)
+  )
+
+  def writerResponse(
+    status:          Int = 200,
+    statusMessage:   String = "OK",
+    mimeType:        String = "text/html"
+  )(writer: HttpResponseWriter => Unit) =
+    HttpResponse(
+      statusCode    = status,
+      statusMessage = statusMessage,
+      mimeType      = mimeType,
+      headers       = Map(),
+      body          = ResponseBodyWriter(writer)
+    )
+
+  def htmlResponse(
+    htmlCode:        String,
+    status:          Int = 200,
+    statusMessage:   String = "OK"
+  ) = HttpResponse(
+    statusCode    = status,
+    statusMessage = statusMessage,
+    mimeType      = "text/html",
+    headers       = Map(),
+    body          = ResponseBodyText(htmlCode)
+  )
+
+  def error404Response(text: String) =
+    textResponse(text, status = 404, statusMessage = "NOT FOUND")
+
+  def redirectResponse(url: String) =
+    textResponse("Moved to " + url, status = 302, statusMessage = "MOVED PERMANENTLY")
+      .addHeader("Location" -> url)
+
+
+  /** Responses that writes back the request to the client side.
+    * It is useful for debugging http request. */
+  def echoResponse(req: HttpRequest) =
+    writerResponse(mimeType = "text/plain"){ w =>
+      val HttpRequest(method, path, headers, version, address, _) = req
+      w.println("Method   =  " + method)
+      w.println("Path     =  " + path)
+      w.println()
+      w.println("headers = ")
+      headers foreach { case (k, v) =>
+        w.println(s"${k}\t=\t${v}")
+      }
+    }
+
+  def fileResponse(
+    file:     String,
+    mimeType: String      = "application/octet-stream"
+  ) = {
+    //  logger.fine(s"Sending HTTP Response file: $file - mime type = $mimeType " )
+    var inp: java.io.FileInputStream = null
+    try {
+      inp = new java.io.FileInputStream(file)
+      val fileSize = new java.io.File(file).length()
+      writerResponse(mimeType = mimeType){ w =>
+        w.copyStream(inp)
+      } // .setContentLenght(fileSize)
+    } catch {
+      case ex: java.io.FileNotFoundException
+          => error404Response("Error: file not found in the server.")
+    } finally {
+      // if(inp != null) inp.close()
     }
   }
 }

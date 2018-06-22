@@ -287,54 +287,54 @@ case class HttpTransaction(
       }
     }
   }
+  // def sendDirNavResponse(
+  //   dirPath: String,
+  //   urlPath: String,
+  //   fileURL: String,
+  //   mimeFn:  String => String = Utils.getMimeType,
+  //   showIndex: Boolean = true,
+  //   showImage: Boolean = false
+  // ) = {
+
+  //   this.logger.fine(s"sendDirNavResponse (dirPath = $dirPath, urlPath = $urlPath, fileURL = $fileURL ...) ")
+
+  //   // Secure against web server against Attacks Based On File and Path Names
+  //   // See: https://www.w3.org/Protocols/rfc2616/rfc2616-sec15.html
+  //   //
+  //   val fileName = Utils.decodeURL(fileURL).replace("..", "")
+  //   val file = new java.io.File(dirPath, fileName)
+
+  //   this.logger.fine(s"sendDirNavResponse -> fileName = $fileName, file = $file")
+
+  //   file match {
+  //     case _ if !file.exists()
+  //         => this.send404Response(s"Error 404: file or directory <${fileURL}> not found.")
+
+  //     case _ if file.isFile()
+  //         =>  this.sendFileResponse(file.getAbsolutePath, mimeFn(file.getAbsolutePath))
+
+  //     case _ if file.isDirectory()
+  //         => {
+  //           val index = new java.io.File(file, "index.html")
+  //           if (showIndex && index.isFile())
+  //             this.sendRedirect(Utils.urlBuilder(Utils.urlBuilder(urlPath, fileName), "index.html"))
+  //             //this.sendRedirect(new java.io.File(urlPath, fileName).toString + "/" + "index.html")
+  //           else{
+  //             val p = Utils.urlBuilder(urlPath, fileName)
+  //             logger.fine(s"SendDirNavResponse - urlPath = $urlPath - fileName = $fileName")
+  //             logger.fine("Listing directory " + p)
+  //             this.sendDirectoryNavListResponse(
+  //               rootPath = dirPath,
+  //               dirPath  = file.getAbsolutePath,
+  //               urlPath  = p,
+  //               showImage
+  //             )
+  //           }
+  //         }
+  //   }
+  // }
 
 
-  def sendDirNavResponse(
-    dirPath: String,
-    urlPath: String,
-    fileURL: String,
-    mimeFn:  String => String = Utils.getMimeType,
-    showIndex: Boolean = true,
-    showImage: Boolean = false
-  ) = {
-
-    this.logger.fine(s"sendDirNavResponse (dirPath = $dirPath, urlPath = $urlPath, fileURL = $fileURL ...) ")
-
-    // Secure against web server against Attacks Based On File and Path Names
-    // See: https://www.w3.org/Protocols/rfc2616/rfc2616-sec15.html
-    //
-    val fileName = Utils.decodeURL(fileURL).replace("..", "")
-    val file = new java.io.File(dirPath, fileName)
-
-    this.logger.fine(s"sendDirNavResponse -> fileName = $fileName, file = $file")
-
-    file match {
-      case _ if !file.exists()
-          => this.send404Response(s"Error 404: file or directory <${fileURL}> not found.")
-
-      case _ if file.isFile()
-          =>  this.sendFileResponse(file.getAbsolutePath, mimeFn(file.getAbsolutePath))
-
-      case _ if file.isDirectory()
-          => {
-            val index = new java.io.File(file, "index.html")
-            if (showIndex && index.isFile())
-              this.sendRedirect(Utils.urlBuilder(Utils.urlBuilder(urlPath, fileName), "index.html"))
-              //this.sendRedirect(new java.io.File(urlPath, fileName).toString + "/" + "index.html")
-            else{
-              val p = Utils.urlBuilder(urlPath, fileName)
-              logger.fine(s"SendDirNavResponse - urlPath = $urlPath - fileName = $fileName")
-              logger.fine("Listing directory " + p)
-              this.sendDirectoryNavListResponse(
-                rootPath = dirPath,
-                dirPath  = file.getAbsolutePath,
-                urlPath  = p,
-                showImage
-              )
-            }
-          }
-    }
-  }
 
 } // ---- End of class HttpTransaction ----- //
 

@@ -427,6 +427,10 @@ class HttpServer(
   def addRoute(route: HttpRoute) =
     routes.append(route)
 
+  def addRoute(pred: HttpRequest => Boolean)(action: HttpRequest => HttpResponse) = {
+    val route = HttpRoute(pred, action)
+    routes.append(route)
+  }
   /** Add a route with get request /{route} GET, for instance http://192.168.0.1/books */
   def addRoutePathGET(predicate: HttpRequest => Boolean)(action: HttpRequest => HttpResponse) =
     routes.append(HttpRoute(

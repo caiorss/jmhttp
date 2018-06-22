@@ -398,36 +398,38 @@ class HttpServer(
   }
 
 
-  // def addRouteDirNav(
-  //   dirPath: String,
-  //   urlPath: String,
-  //   showIndex: Boolean = true,
-  //   showImage: Boolean = false
-  // ) = {
-  //   this.addRouteParamGET(urlPath){ (req: HttpTransaction, fileURL: String) =>
-  //     // println("File URL = " + fileURL)
-  //     logger.fine(s"Setting up route: addRouteDirNav(dirPath = $dirPath, urlPath = $urlPath )")
-  //     req.sendDirNavResponse(dirPath, urlPath, fileURL, showIndex = showIndex, showImage = showImage)
-  //   }
-  // }
+  def addRouteDirNav(
+    dirPath: String,
+    urlPath: String,
+    showIndex: Boolean = true,
+    showImage: Boolean = false
+  ) = {
+    this.addRouteParamGET(urlPath){ (req: HttpRequest, fileURL: String) =>
+      // println("File URL = " + fileURL)
+      logger.fine(s"Setting up route: addRouteDirNav(dirPath = $dirPath, urlPath = $urlPath )")
+      ResponseUtils.sendDirNavResponse(
+        dirPath, urlPath, fileURL, showIndex = showIndex, showImage = showImage
+      )
+    }
+  }
 
-  // def addRouteDirsIndex(
-  //   urlPaths: Seq[(String, String)],
-  //   showIndex: Boolean = true,
-  //   showImage: Boolean = false
-  // ) = {
-  //   val indexPage = urlPaths.foldLeft(""){ (acc, tpl) =>
-  //     val (dirUrl, dirPath) = tpl
-  //     acc + "\n" + s"Directory: <a href='${dirUrl}'>${dirUrl}</a></br></br>"
-  //   }
-  //   this.addRoutePathGET("/"){
-  //     val pageHeader = "<h1>Shared Directories</h1></br>\n"
-  //     _.sendTextResponse(pageHeader + indexPage, mimeType = "text/html")
-  //   }
-  //   urlPaths foreach { case (dirUrl, dirPath) =>
-  //     this.addRouteDirNav(dirPath, dirUrl, showIndex = showIndex, showImage)
-  //   }
-  // }
+  def addRouteDirsIndex(
+    urlPaths: Seq[(String, String)],
+    showIndex: Boolean = true,
+    showImage: Boolean = false
+  ) = {
+    val indexPage = urlPaths.foldLeft(""){ (acc, tpl) =>
+      val (dirUrl, dirPath) = tpl
+      acc + "\n" + s"Directory: <a href='${dirUrl}'>${dirUrl}</a></br></br>"
+    }
+    this.addRoutePathGET(r => r.path == "/"){ req =>
+      val pageHeader = "<h1>Shared Directories</h1></br>\n"
+      ResponseUtils.htmlResponse(pageHeader + indexPage)
+    }
+    urlPaths foreach { case (dirUrl, dirPath) =>
+      this.addRouteDirNav(dirPath, dirUrl, showIndex = showIndex, showImage)
+    }
+  }
 
 
   def addRouteEcho(path: String = "/echo") = {

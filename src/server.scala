@@ -43,6 +43,11 @@ class HttpResponseWriter(outStream: java.io.OutputStream){
 
 } /* --- EoF class HttpResponseWriter --- */
 
+sealed trait ResponseBody
+case class ResponseBodyText(text: String)                         extends ResponseBody
+case class ResponseBodyStream(stream: java.io.InputStream)        extends ResponseBody
+case class ResponseBodyWriter(writer: HttpResponseWriter => Unit) extends ResponseBody
+
 
 case class HttpRequest(
   method:    String,

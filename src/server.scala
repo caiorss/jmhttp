@@ -549,20 +549,31 @@ class HttpServer(
   } //------ End of getClientRequest() ----- //
 
 
-  def serveRequest(req: HttpTransaction) = {
-    val rule = routes.find(r => r.matcher(req.request))
+  def serveRequest(tra: HttpTransaction) = {
+    val rule: Option[HttpRoute] = routes.find(r => r.matcher(tra.request))
     rule match {
-      case Some(r)
-          =>
-        basicAuthLogin match{
-          case None
-              => r.action(req)            
-          case Some((user, pass))
-              => req.sendBasicAuth(user, pass){ r.action }
-        }
-
       case None
-          => req.send404Response(s"Error: resource ${req.getPath()} not found")
+        => {
+          val response = ResponseUtils.error404Response(
+            s"Error: resource ${tra.getPath()} not found"
+          )
+          this.writeResponse(tra.response, response)
+        }
+      case Some(r: HttpRoute)
+          => {
+            basicAuthLogin match {
+              case None
+                  => {
+                    val response = r.action(tra.request)
+                    this.writeResponse(tra.response, response)
+                  }
+              case Some((user, pass))
+                  =>{
+                    val response = ResponseUtils.basicAuth(user, pass, tra.request){r.action _}
+                    this.writeResponse(tra.response, response)
+                  }
+            }
+        }
     }
   }
   

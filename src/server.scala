@@ -402,6 +402,11 @@ class HttpServer(
     val route = HttpRoute(pred, action)
     routes.append(route)
   }
+
+  /** Add route with constant response which doesn't depend on the request. */
+  def addRouteResponse(pred: HttpRequest => Boolean, resp: HttpResponse) =
+    routes.append(HttpRoute(pred, _ => resp ))
+
   /** Add a route with get request /{route} GET, for instance http://192.168.0.1/books */
   def addRoutePathGET(predicate: HttpRequest => Boolean)(action: HttpRequest => HttpResponse) =
     routes.append(HttpRoute(

@@ -344,8 +344,8 @@ case class HttpTransaction(
   * @param action  - Action that writes the response when the HTTP request is matched.
   **/
 trait HttpRoute{
-  def matcher(rq: HttpRequest):    Boolean
-  def action(tr: HttpTransaction): Unit
+  def matcher(rq: HttpRequest): Boolean
+  def action(rq:  HttpRequest): HttpResponse
 }
 
 object HttpRoute{

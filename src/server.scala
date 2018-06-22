@@ -63,6 +63,9 @@ case class HttpResponse(
   }
   def addHeader(name: String, value: String) =
     this.copy(headers = this.headers ++ Map(name -> value))
+
+  def setContentLenght(len: Long) =
+    addHeader("Content-Length", len.toString)
 }
 
 case class HttpRequest(

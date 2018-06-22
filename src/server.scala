@@ -376,18 +376,18 @@ class HttpServer(
       action  = action
     ))
 
-  // def addRouteParamGET(path: String)(action: (HttpTransaction, String) => Unit) = {
-  //   val rule = HttpRoute(
-  //     matcher = (req: HttpRequest) => {
-  //       if (path == "/")
-  //         req.method == "GET" &&  req.path.startsWith("/")
-  //       else
-  //         req.method == "GET" &&  req.path.startsWith(path)
-  //     },
-  //     action  = (req: HttpTransaction) => action(req, req.getPath().stripPrefix(path))
-  //   )
-  //   this.addRoute(rule)
-  // }
+  def addRouteParamGET(path: String)(action: (HttpRequest, String) => HttpResponse) = {
+    val rule = HttpRoute(
+      matcher = (req: HttpRequest) => {
+        if (path == "/")
+          req.method == "GET" &&  req.path.startsWith("/")
+        else
+          req.method == "GET" &&  req.path.startsWith(path)
+      },
+      action = (req: HttpRequest) => action(req, req.path.stripPrefix(path))
+    )
+    this.addRoute(rule)
+  }
 
   def addRouteRedirect(pred: HttpRequest => Boolean, url: String) = {
     val rule = HttpRoute(

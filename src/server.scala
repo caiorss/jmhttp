@@ -519,7 +519,7 @@ class HttpServer(
       case None
         => {
           val response = ResponseUtils.error404Response(
-            s"Error: resource ${tra.getPath()} not found"
+            s"Error: resource ${tra.request.path} not found"
           )
           this.writeResponse(tra.response, response)
         }

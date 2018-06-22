@@ -469,7 +469,30 @@ class HttpServer(
     urlPaths foreach { case (dirUrl, dirPath) =>
       this.addRouteDirNav(dirPath, dirUrl, showIndex = showIndex, showImage)
     }
+  def writeResponse(w: HttpResponseWriter, resp: HttpResponse) =  try {
+      val httpVersion =  "HTTP/1.0"
+      // val w = new HttpResponseWriter(out)
+      w.println(s"${httpVersion} ${resp.statusCode} ${resp.statusMessage}")
+      // First header is the server name
+      w.println("Server: JmHttp")
+      // Second header is the content type
+      w.println("Content-Type:   " + resp.mimeType)
+      // Write the remaining response headers
+      resp.headers foreach { case (k, v) =>
+        w.println(s"${k}: ${v}")
+      }
+      // Empty line separating wonse line and header from body
+      w.println()
+      resp.body match {
+        case ResponseBodyText(text)
+            => w.print(text)
+        case ResponseBodyStream(is)
+            => w.copyStream(is)
+        case ResponseBodyWriter(writer)
+          => writer(w)
+        }
   }
+  finally w.close()
 
 
   /** Accept client socket connection and try to parser HTTP request returning None for an invalid request message.

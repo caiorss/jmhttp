@@ -120,35 +120,6 @@ case class HttpTransaction(
   }
 
 
-  // def sendBasicAuth(user: String, passwd: String)(action: HttpTransaction => Unit) = {
-  //   val secret =
-  //     java.util.Base64
-  //       .getEncoder()
-  //       .encodeToString((user + ":" + passwd).getBytes("UTF-8"))
-  //   def denyAccess() =
-  //     this.sendTextResponse(
-  //       text       = "Unauthorized Access",
-  //       status     = 401,
-  //       statusMsg  = "UNAUTHORIZED",
-  //       headers    = Map("Www-Authenticate" -> "Basic realm=\"Fake Realm\"")
-  //     )
-  //   val auth = getHeaders().get("Authorization")
-  //   logger.info("User authorization = " + auth + " secret " + secret)
-  //   auth match {
-  //     case None
-  //         => denyAccess()
-  //     case Some(a)
-  //         =>
-  //       if (a == "Basic " + secret) {
-  //         logger.info("User authtentication successful")
-  //         action(this)
-  //       }
-  //       else
-  //         denyAccess()
-  //   }
-  // }
-
-
   // def sendDirectoryNavListResponse(
   //   rootPath: String,
   //   dirPath: String,

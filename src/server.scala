@@ -143,18 +143,17 @@ case class HttpTransaction(
   }
 
   /** Send response with http request parameters for debugging. */
-  def sendDebugResponse() =
-    withResponse(mimeType = "text/plain"){ resp =>
-      val HttpRequest(method, path, headers, version, address, _) = request
-      resp.println("Method =  " + method)
-      resp.println("Path   =  " + path)
-      resp.println()
-      resp.println("headers = ")
-      headers foreach { case (k, v) =>
-        resp.println(s"${k}\t=\t${v}")
-      }
-    }
-
+  // def sendDebugResponse() =
+  //   withResponse(mimeType = "text/plain"){ resp =>
+  //     val HttpRequest(method, path, headers, version, address, _) = request
+  //     resp.println("Method =  " + method)
+  //     resp.println("Path   =  " + path)
+  //     resp.println()
+  //     resp.println("headers = ")
+  //     headers foreach { case (k, v) =>
+  //       resp.println(s"${k}\t=\t${v}")
+  //     }
+  //   }
 
   def sendTextResponse(
     text:      String,

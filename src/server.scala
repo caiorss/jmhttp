@@ -490,9 +490,9 @@ class HttpServer(
   }
   finally w.close()
 
-
-  /** Accept client socket connection and try to parser HTTP request returning None for an invalid request message.
-    */
+  /** Accept client socket connection and try to parser HTTP request.
+    * It returns None for an invalid request message.
+    ******************************************************************/
   private def parseRequest(client: Socket, verbose: Boolean = false): Option[HttpTransaction] = {
     //val client: Socket = ssock.accept()
     logger.fine("Get client socket " + client)

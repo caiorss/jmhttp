@@ -275,7 +275,7 @@ object Main{
     println("Running command echo")
     val port = res.getInt("port", 8080)
     val host = res.getStr("host", "0.0.0.0")
-    server.addRouteDebug("/")
+    server.addRouteEcho("/")
     server.run(port = port, host = host)
   }  
 

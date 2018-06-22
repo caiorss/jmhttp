@@ -81,9 +81,9 @@ case class HttpRequest(
 } //----  Eof case class HttpRequest ----- //
 
 case class HttpTransaction(
-                            request: HttpRequest,
+                            request:  HttpRequest,
                             response: HttpResponseWriter,
-                            logger: java.util.logging.Logger
+                            logger:   java.util.logging.Logger
  ){
   val httpVersion = "HTTP/1.0"
   type HttpHeaders = Map[String, String]

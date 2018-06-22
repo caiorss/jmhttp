@@ -402,55 +402,74 @@ class HttpServer(
     routes.append(route)
 
   /** Add a route with get request /{route} GET, for instance http://192.168.0.1/books */
-  def addRoutePathGET(path: String)(action: HttpTransaction => Unit) =
-    routes.append(HttpRoute(
-      matcher = (req: HttpRequest) => req.method == "GET" && req.path == path,
-      action  = action
-    ))
+  // def addRoutePathGET(path: String)(action: HttpTransaction => Unit) =
+  //   routes.append(HttpRoute(
+  //     matcher = (req: HttpRequest) => req.method == "GET" && req.path == path,
+  //     action  = action
+  //   ))
 
-  def addRouteParamGET(path: String)(action: (HttpTransaction, String) => Unit) = {
-    val rule = HttpRoute(
-      matcher = (req: HttpRequest) => {
-        if (path == "/")
-          req.method == "GET" &&  req.path.startsWith("/")
-        else
-          req.method == "GET" &&  req.path.startsWith(path)
-      },
-      action  = (req: HttpTransaction) => action(req, req.getPath().stripPrefix(path))
-    )
-    this.addRoute(rule)
-  }
+  // def addRouteParamGET(path: String)(action: (HttpTransaction, String) => Unit) = {
+  //   val rule = HttpRoute(
+  //     matcher = (req: HttpRequest) => {
+  //       if (path == "/")
+  //         req.method == "GET" &&  req.path.startsWith("/")
+  //       else
+  //         req.method == "GET" &&  req.path.startsWith(path)
+  //     },
+  //     action  = (req: HttpTransaction) => action(req, req.getPath().stripPrefix(path))
+  //   )
+  //   this.addRoute(rule)
+  // }
 
-  def addRouteRedirect(pred: String => Boolean, url: String) = {
-    val rule = HttpRoute(
-      matcher = (req: HttpRequest) => pred(req.path),
-      action  = (req: HttpTransaction) => req.sendRedirect(url)
-    )
-    this.addRoute(rule)
-  }
+  // def addRouteRedirect(pred: String => Boolean, url: String) = {
+  //   val rule = HttpRoute(
+  //     matcher = (req: HttpRequest) => pred(req.path),
+  //     action  = (req: HttpTransaction) => req.sendRedirect(url)
+  //   )
+  //   this.addRoute(rule)
+  // }
 
 
-  def addRouteDirNav(
-    dirPath: String,
-    urlPath: String,
-    showIndex: Boolean = true,
-    showImage: Boolean = false
-  ) = {
-    this.addRouteParamGET(urlPath){ (req: HttpTransaction, fileURL: String) =>
-      // println("File URL = " + fileURL)
-      logger.fine(s"Setting up route: addRouteDirNav(dirPath = $dirPath, urlPath = $urlPath )")
-      req.sendDirNavResponse(dirPath, urlPath, fileURL, showIndex = showIndex, showImage = showImage)
-    }
-  }
+  // def addRouteDirNav(
+  //   dirPath: String,
+  //   urlPath: String,
+  //   showIndex: Boolean = true,
+  //   showImage: Boolean = false
+  // ) = {
+  //   this.addRouteParamGET(urlPath){ (req: HttpTransaction, fileURL: String) =>
+  //     // println("File URL = " + fileURL)
+  //     logger.fine(s"Setting up route: addRouteDirNav(dirPath = $dirPath, urlPath = $urlPath )")
+  //     req.sendDirNavResponse(dirPath, urlPath, fileURL, showIndex = showIndex, showImage = showImage)
+  //   }
+  // }
 
-  def addRouteDirsIndex(
-    urlPaths: Seq[(String, String)],
-    showIndex: Boolean = true,
-    showImage: Boolean = false
-  ) = {
-    val indexPage = urlPaths.foldLeft(""){ (acc, tpl) =>
-      val (dirUrl, dirPath) = tpl
-      acc + "\n" + s"Directory: <a href='${dirUrl}'>${dirUrl}</a></br></br>"
+  // def addRouteDirsIndex(
+  //   urlPaths: Seq[(String, String)],
+  //   showIndex: Boolean = true,
+  //   showImage: Boolean = false
+  // ) = {
+  //   val indexPage = urlPaths.foldLeft(""){ (acc, tpl) =>
+  //     val (dirUrl, dirPath) = tpl
+  //     acc + "\n" + s"Directory: <a href='${dirUrl}'>${dirUrl}</a></br></br>"
+  //   }
+  //   this.addRoutePathGET("/"){
+  //     val pageHeader = "<h1>Shared Directories</h1></br>\n"
+  //     _.sendTextResponse(pageHeader + indexPage, mimeType = "text/html")
+  //   }
+  //   urlPaths foreach { case (dirUrl, dirPath) =>
+  //     this.addRouteDirNav(dirPath, dirUrl, showIndex = showIndex, showImage)
+  //   }
+  // }
+
+
+  // def addRouteDebug(path: String = "/debug") = {
+  //   val rule = HttpRoute(
+  //     matcher = (req: HttpRequest) => req.path.startsWith(path),
+  //     action  = (req: HttpRequest) => req.sendDebugResponse()
+  //   )
+  //   this.addRoute(rule)
+  // }
+
     }
     this.addRoutePathGET("/"){
       val pageHeader = "<h1>Shared Directories</h1></br>\n"
@@ -461,13 +480,6 @@ class HttpServer(
     }
   }
 
-  def addRouteDebug(path: String = "/debug") = {
-    val rule = HttpRoute(
-      matcher = (req: HttpRequest) => req.path.startsWith(path),
-      action  = (req: HttpTransaction) => req.sendDebugResponse()
-    )
-    this.addRoute(rule)
-  }
 
   /** Accept client socket connection and try to parser HTTP request returning None for an invalid request message.
     */

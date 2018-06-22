@@ -119,174 +119,84 @@ case class HttpTransaction(
     resp.close()
   }
 
-  def withResponseLen(
-    status:    Int          = 200,
-    statusMsg: String       = "OK",
-    mimeType:  String       = "text/html",
-    headers:   HttpHeaders  = Map[String, String](),
-    contentLen: Long         = -1,
-  )(fn: HttpResponseWriter => Unit) = {
 
-    val resp = this.response
-    // Write response line
-    resp.println(s"${httpVersion} ${status} ${statusMsg}")
-    // Write HTTP Headers
-    //-------------------------
-    resp.println("Content-Type:   " + mimeType)
-    if (contentLen > 0)
-      resp.println("Content-Length: " + contentLen)
+  // def sendBasicAuth(user: String, passwd: String)(action: HttpTransaction => Unit) = {
+  //   val secret =
+  //     java.util.Base64
+  //       .getEncoder()
+  //       .encodeToString((user + ":" + passwd).getBytes("UTF-8"))
+  //   def denyAccess() =
+  //     this.sendTextResponse(
+  //       text       = "Unauthorized Access",
+  //       status     = 401,
+  //       statusMsg  = "UNAUTHORIZED",
+  //       headers    = Map("Www-Authenticate" -> "Basic realm=\"Fake Realm\"")
+  //     )
+  //   val auth = getHeaders().get("Authorization")
+  //   logger.info("User authorization = " + auth + " secret " + secret)
+  //   auth match {
+  //     case None
+  //         => denyAccess()
+  //     case Some(a)
+  //         =>
+  //       if (a == "Basic " + secret) {
+  //         logger.info("User authtentication successful")
+  //         action(this)
+  //       }
+  //       else
+  //         denyAccess()
+  //   }
+  // }
 
-    headers foreach { case (k, v) =>
-      // println("Written header - " + s"${k}: ${v}")
-      resp.println(s"${k}: ${v}")
-    }
-    // Empty line separating response line and header from body
-    resp.println()
-    fn(resp)
-    resp.close()
-  }
 
-  /** Send response with http request parameters for debugging. */
-  // def sendDebugResponse() =
-  //   withResponse(mimeType = "text/plain"){ resp =>
-  //     val HttpRequest(method, path, headers, version, address, _) = request
-  //     resp.println("Method =  " + method)
-  //     resp.println("Path   =  " + path)
-  //     resp.println()
-  //     resp.println("headers = ")
-  //     headers foreach { case (k, v) =>
-  //       resp.println(s"${k}\t=\t${v}")
+  // def sendDirectoryNavListResponse(
+  //   rootPath: String,
+  //   dirPath: String,
+  //   urlPath: String,
+  //   showImage: Boolean = false
+  // ) = {
+  //   def relativePath(root: String, path: String): String = {
+  //     import java.nio.file.{Paths, Path}
+  //     val rp = Paths.get(root)
+  //     val p  = Paths.get(path)
+  //     rp.relativize(p).toString
+  //   }
+  //   logger.fine(s"Directory navigation - rootPath = $rootPath, dirPath = $dirPath, urlPath = $urlPath ")
+  //   val contents = new java.io.File(dirPath).listFiles
+  //   val files = contents.filter(_.isFile).map(_.getName)
+  //   val dirs  = contents.filter(_.isDirectory).map(_.getName)
+  //   withResponseLen(){ resp =>
+  //     val p =  Utils.urlBuilder(urlPath, relativePath(rootPath, dirPath))
+  //     resp.println(s"<h1>Contents of $p</h1>")
+  //     resp.println("<h2>Directories</h2>")
+  //     dirs foreach { dir =>
+  //       val url = Utils.urlBuilder(urlPath, dir)
+  //       logger.fine(s"DEBUG urlPath = $urlPath ; dir = $dir ; url = ${url} ")
+  //       resp.println(s"<a href='$url'>$dir</a></br></br>")
+  //     }
+  //     resp.println("<h2>Files</h2>")
+  //     files foreach { file =>
+  //       val url = Utils.urlBuilder(urlPath, file)
+  //       resp.println(s"<a href='$url'>${file}</a></br></br>")
+
+  //       if(showImage && Utils.isImageFile(file)){
+  //         //resp.writeLine(s"<img src='$url' style='max-height: 200px; max-width= 200px;' /></br></br>")
+  //         val fileAbs = new java.io.File(dirPath, file).getPath()
+  //         logger.fine("Image file served = " + fileAbs)
+  //         val img = ImageUtils.scaleFitZoom(
+  //           ImageUtils.readFile(fileAbs),
+  //           400,
+  //           400,
+  //           1.0
+  //         )
+  //         val b64encode = ImageUtils.toBase64String(img)
+  //         resp.println(s"<img src='data:image/png;base64,$b64encode' style='max-height: 200px; max-width= 200px;' /></br></br>")
+  //       }
   //     }
   //   }
-
-  def sendTextResponse(
-    text:      String,
-    status:    Int = 200,
-    statusMsg: String = "Ok",
-    mimeType:  String = "text/plain",
-    headers:   HttpHeaders = Map[String, String]()
-  ) = withResponseLen(
-    status     = status,
-    statusMsg  = statusMsg,
-    mimeType   = mimeType,
-    contentLen = text.getBytes("UTF-8").length,
-    headers    = headers,
-  ) { req =>
-    req.print(text)
-  }
-
-  def send404Response(text: String) = {
-    this.sendTextResponse(text, 404, "NOT FOUND")
-  }
-
-  def sendRedirect(url: String) =
-    this.sendTextResponse(
-      "Moved to " + url,
-      302,
-      "MOVED PERMANENTLY",
-      headers = Map("Location" -> url)
-    )
+  // }
 
 
-  def sendBasicAuth(user: String, passwd: String)(action: HttpTransaction => Unit) = {
-    val secret =
-      java.util.Base64
-        .getEncoder()
-        .encodeToString((user + ":" + passwd).getBytes("UTF-8"))
-    def denyAccess() =
-      this.sendTextResponse(
-        text       = "Unauthorized Access",
-        status     = 401,
-        statusMsg  = "UNAUTHORIZED",
-        headers    = Map("Www-Authenticate" -> "Basic realm=\"Fake Realm\"")
-      )
-    val auth = getHeaders().get("Authorization")
-    logger.info("User authorization = " + auth + " secret " + secret)
-    auth match {
-      case None
-          => denyAccess()
-      case Some(a)
-          =>
-        if (a == "Basic " + secret) {
-          logger.info("User authtentication successful")
-          action(this)
-        }
-        else
-          denyAccess()
-    }
-  }
-
-  def sendFileResponse(
-    file:     String,
-    mimeType: String      = "application/octet-stream",
-    headers:  HttpHeaders = Map[String, String]()
-  ) = {
-    logger.fine(s"Sending HTTP Response file: $file - mime type = $mimeType " )
-    try {
-      val inp = new java.io.FileInputStream(file)
-      val fileSize = new java.io.File(file).length()
-      withResponseLen(
-        mimeType   = mimeType,
-        contentLen = fileSize,
-      ){ resp =>
-        resp.copyStream(inp)
-        inp.close()
-      }
-    } catch {
-      case ex: java.io.FileNotFoundException
-          => this.send404Response("Error: file not found in the server.")
-    }
-  }
-
-
-  def sendDirectoryNavListResponse(
-    rootPath: String,
-    dirPath: String,
-    urlPath: String,
-    showImage: Boolean = false
-  ) = {
-    def relativePath(root: String, path: String): String = {
-      import java.nio.file.{Paths, Path}
-      val rp = Paths.get(root)
-      val p  = Paths.get(path)
-      rp.relativize(p).toString
-    }
-
-    logger.fine(s"Directory navigation - rootPath = $rootPath, dirPath = $dirPath, urlPath = $urlPath ")
-
-    val contents = new java.io.File(dirPath).listFiles
-    val files = contents.filter(_.isFile).map(_.getName)
-    val dirs  = contents.filter(_.isDirectory).map(_.getName)
-    withResponseLen(){ resp =>
-      val p =  Utils.urlBuilder(urlPath, relativePath(rootPath, dirPath))
-      resp.println(s"<h1>Contents of $p</h1>")
-      resp.println("<h2>Directories</h2>")
-      dirs foreach { dir =>
-        val url = Utils.urlBuilder(urlPath, dir)
-        logger.fine(s"DEBUG urlPath = $urlPath ; dir = $dir ; url = ${url} ")
-        resp.println(s"<a href='$url'>$dir</a></br></br>")
-      }
-      resp.println("<h2>Files</h2>")
-      files foreach { file =>
-        val url = Utils.urlBuilder(urlPath, file)
-        resp.println(s"<a href='$url'>${file}</a></br></br>")
-
-        if(showImage && Utils.isImageFile(file)){
-          //resp.writeLine(s"<img src='$url' style='max-height: 200px; max-width= 200px;' /></br></br>")
-          val fileAbs = new java.io.File(dirPath, file).getPath()
-          logger.fine("Image file served = " + fileAbs)
-          val img = ImageUtils.scaleFitZoom(
-            ImageUtils.readFile(fileAbs),
-            400,
-            400,
-            1.0
-          )
-          val b64encode = ImageUtils.toBase64String(img)
-          resp.println(s"<img src='data:image/png;base64,$b64encode' style='max-height: 200px; max-width= 200px;' /></br></br>")
-        }
-      }
-    }
-  }
   // def sendDirNavResponse(
   //   dirPath: String,
   //   urlPath: String,

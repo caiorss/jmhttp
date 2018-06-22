@@ -416,13 +416,13 @@ class HttpServer(
   //   this.addRoute(rule)
   // }
 
-  // def addRouteRedirect(pred: String => Boolean, url: String) = {
-  //   val rule = HttpRoute(
-  //     matcher = (req: HttpRequest) => pred(req.path),
-  //     action  = (req: HttpTransaction) => req.sendRedirect(url)
-  //   )
-  //   this.addRoute(rule)
-  // }
+  def addRouteRedirect(pred: HttpRequest => Boolean, url: String) = {
+    val rule = HttpRoute(
+      matcher = (req: HttpRequest) => pred(req),
+      action  = (req: HttpRequest) => ResponseUtils.redirectResponse(url)
+    )
+    this.addRoute(rule)
+  }
 
 
   // def addRouteDirNav(

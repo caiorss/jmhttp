@@ -354,7 +354,13 @@ object ResponseUtils{
       // if(inp != null) inp.close()
     }
   }
-}
+
+  private val denyAccess = textResponse(
+    "Unauthorized Access",
+    401,
+    "UNAUTHORIZED ACCESS"
+  ).addHeader("Www-Authenticate" -> "Basic realm=\"Fake Realm\"")
+
 
 
 class HttpServer(

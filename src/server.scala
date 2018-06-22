@@ -3,7 +3,7 @@ package jmhttp.server
 import java.net.{InetAddress, ServerSocket, Socket}
 import jmhttp.utils.{Utils, ImageUtils}
 
-class HttpResponse(outStream: java.io.OutputStream){
+class HttpResponseWriter(outStream: java.io.OutputStream){
 
   private val out = new java.io.DataOutputStream(outStream)
   private val crlf = "\r\n"
@@ -11,7 +11,7 @@ class HttpResponse(outStream: java.io.OutputStream){
   def print(text: String) = {
     out.writeBytes(text)
   }
-  
+
   def println(line: String = "") = {
     out.writeBytes(line + crlf)
   }
@@ -41,8 +41,8 @@ class HttpResponse(outStream: java.io.OutputStream){
   def flush() =
     out.flush()
 
+} /* --- EoF class HttpResponseWriter --- */
 
-}
 
 case class HttpRequest(
   method:    String,
@@ -50,19 +50,19 @@ case class HttpRequest(
   headers:   Map[String, String],
   version:   String,
   address:   InetAddress,
-  inpStream: java.io.InputStream  
+  inpStream: java.io.InputStream
 ) {
   override def toString() =
     s"HTTP Request: path = ${this.path} - method = ${this.method} - address = ${this.address}"
 } //----  Eof case class HttpRequest ----- //
 
 case class HttpTransaction(
-  request: HttpRequest,
-  response: HttpResponse,
-  logger: java.util.logging.Logger
+                            request: HttpRequest,
+                            response: HttpResponseWriter,
+                            logger: java.util.logging.Logger
  ){
   val httpVersion = "HTTP/1.0"
-  type HttpHeaders = Map[String, String] 
+  type HttpHeaders = Map[String, String]
 
   def getMethod()  = request.method
   def getPath()    = request.path
@@ -74,7 +74,7 @@ case class HttpTransaction(
     statusMsg: String       = "OK",
     mimeType:  String       = "text/html",
     headers:   Map[String, String] = Map[String, String]()
-  )(fn: HttpResponse => Unit) = {
+  )(fn: HttpResponseWriter => Unit) = {
 
     val resp = response
 
@@ -101,9 +101,9 @@ case class HttpTransaction(
     mimeType:  String       = "text/html",
     headers:   HttpHeaders  = Map[String, String](),
     contentLen: Long         = -1,
-  )(fn: HttpResponse => Unit) = {
+  )(fn: HttpResponseWriter => Unit) = {
 
-    val resp = this.response 
+    val resp = this.response
     // Write response line
     resp.println(s"${httpVersion} ${status} ${statusMsg}")
     // Write HTTP Headers
@@ -151,7 +151,7 @@ case class HttpTransaction(
   ) { req =>
     req.print(text)
   }
-  
+
   def send404Response(text: String) = {
     this.sendTextResponse(text, 404, "NOT FOUND")
   }
@@ -309,11 +309,11 @@ case class HttpTransaction(
                 showImage
               )
             }
-          }    
+          }
     }
   }
 
-} // ---- End of class HttpTransaction ----- // 
+} // ---- End of class HttpTransaction ----- //
 
 
 /** Generic http route
@@ -365,7 +365,7 @@ class HttpServer(
     new ServerSocket()
 
   init()
-  private def init(){   
+  private def init(){
   }
 
   def setLogin(login: Option[(String, String)]): Unit = {
@@ -459,7 +459,7 @@ class HttpServer(
       var line: String = ""
       logger.fine("Parsing client headers")
       while({line = sc.nextLine(); line} != ""){
-        //logger.fine("Request header line = " + line)      
+        //logger.fine("Request header line = " + line)
         line.split(":\\s+", 2) match {
           case Array(key, value)
               => headers += key.stripSuffix(":") -> value
@@ -490,7 +490,7 @@ class HttpServer(
         address   = client.getInetAddress(),
         inpStream = client.getInputStream()
       )
-      val resp = new HttpResponse(client.getOutputStream())
+      val resp = new HttpResponseWriter(client.getOutputStream())
       Some(HttpTransaction(req, resp, this.logger))
     }
   } //------ End of getClientRequest() ----- //

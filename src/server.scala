@@ -631,6 +631,32 @@ object HttpServer{
         server.addRoute(fileRoute)
       }
 
+      case List("demo1") => {
+        server.addRouteRedirect(r => r.path == "/", "/demo1")
+        server.addRoutePathGET(req => req.path == "/demo1"){ req =>
+          ResponseUtils.textResponse("Hello world I am here!!")
+        }
+      }
+      case List("basicAuth") => {
+        server.addRoute(r => true){r =>
+          ResponseUtils.basicAuth("user", "pass", r){ req =>
+            ResponseUtils.textResponse("User logged OK.! Enjoy your stay.")
+          }
+        }
+      }
+      case List("basicAuth2") => {
+        server.setLogin(Some(("john", "pass")))
+        server.addRouteResponse(r => r.path == "/",
+          ResponseUtils.htmlResponse(""" 
+          <h1>This is the index</h1>      </br>
+          <a href='/files'>User files</a> </br>
+          <a href='/data'> User data </a> </br>
+          """))
+        server.addRouteResponse(r => r.path == "/files",
+          ResponseUtils.textResponse("Show user files"))
+        server.addRouteResponse(r => r.path == "/data",
+          ResponseUtils.textResponse("Show user data"))
+      }
       case _ => {
         println("Error: invalid option.")
         System.exit(1)

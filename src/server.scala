@@ -621,6 +621,11 @@ object HttpServer{
         server.addRouteResponse(r => r.path == "/data",
           ResponseUtils.textResponse("Show user data"))
       }
+
+      case List("dirlist", dir) => {
+        server.addRouteDirNav(dir, "/")
+      }
+
       case _ => {
         println("Error: invalid option.")
         System.exit(1)

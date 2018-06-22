@@ -361,6 +361,31 @@ object ResponseUtils{
     "UNAUTHORIZED ACCESS"
   ).addHeader("Www-Authenticate" -> "Basic realm=\"Fake Realm\"")
 
+  def basicAuth(
+    user:   String,
+    passwd: String,
+    req:    HttpRequest
+  )(action: HttpRequest => HttpResponse): HttpResponse =  {
+    val secret =
+      java.util.Base64
+        .getEncoder()
+        .encodeToString((user + ":" + passwd).getBytes("UTF-8"))
+    val auth = req.headers.get("Authorization")
+    // logger.info("User authorization = " + auth + " secret " + secret)
+    auth match {
+      case None
+          => denyAccess
+      case Some(a)
+          =>
+        if (a == "Basic " + secret) {
+          //logger.info("User authtentication successful")
+          action(req)
+        }
+        else
+          denyAccess
+    }
+  }
+} /** --- EoF object ResponseUtils --- **/
 
 
 class HttpServer(

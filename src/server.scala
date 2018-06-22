@@ -1,4 +1,4 @@
-package jmhttp.server
+package jmhttp.http
 
 import java.net.{InetAddress, ServerSocket, Socket}
 import jmhttp.utils.{Utils, ImageUtils}

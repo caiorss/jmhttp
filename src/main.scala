@@ -1,6 +1,6 @@
 package jmhttp.main
 
-import jmhttp.server.HttpServer
+import jmhttp.http.HttpServer
 import jmhttp.utils.{NetDiscovery, Utils}
 import com.sftool.optParser.{OptCommand, OptParser, OptResult}
 import jmhttp.main.Main.server

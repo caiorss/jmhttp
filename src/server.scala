@@ -337,7 +337,7 @@ object ResponseUtils{
 
   def fileResponse(
     file:     String,
-    mimeType: String      = "application/octet-stream"
+    mimeType: String = "application/octet-stream"
   ) = {
     //  logger.fine(s"Sending HTTP Response file: $file - mime type = $mimeType " )
     var inp: java.io.FileInputStream = null

@@ -261,15 +261,19 @@ trait HttpRoute{
 object HttpRoute{
   def apply(
     matcher: HttpRequest => Boolean,
-    action:  HttpTransaction => Unit
+    action:  HttpRequest => HttpResponse
   ) = {
     val m = matcher
     val a = action
     new HttpRoute{
       def matcher(rq: HttpRequest) =
         m(rq)
-      def action(tr:  HttpTransaction) =
-        a(tr)
+      def action(rq:  HttpRequest) =
+        a(rq)
+    }
+  }
+}
+
 
 object ResponseUtils{
   def textResponse(

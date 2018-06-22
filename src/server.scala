@@ -226,6 +226,55 @@ object ResponseUtils{
           denyAccess
     }
   }
+
+  def sendDirectoryNavListResponse(
+    rootPath: String,
+    dirPath: String,
+    urlPath: String,
+    showImage: Boolean = false
+  ) = {
+    def relativePath(root: String, path: String): String = {
+      import java.nio.file.{Paths, Path}
+      val rp = Paths.get(root)
+      val p  = Paths.get(path)
+      rp.relativize(p).toString
+    }
+    // logger.fine(s"Directory navigation - rootPath = $rootPath, dirPath = $dirPath, urlPath = $urlPath ")
+    val contents = new java.io.File(dirPath).listFiles
+    val files = contents.filter(_.isFile).map(_.getName)
+    val dirs  = contents.filter(_.isDirectory).map(_.getName)
+    writerResponse(mimeType = "text/html"){ resp =>
+      val p =  Utils.urlBuilder(urlPath, relativePath(rootPath, dirPath))
+      resp.println(s"<h1>Contents of $p</h1>")
+      resp.println("<h2>Directories</h2>")
+      dirs foreach { dir =>
+        val url = Utils.urlBuilder(urlPath, dir)
+        // logger.fine(s"DEBUG urlPath = $urlPath ; dir = $dir ; url = ${url} ")
+        resp.println(s"<a href='$url'>$dir</a></br></br>")
+      }
+      resp.println("<h2>Files</h2>")
+      files foreach { file =>
+        val url = Utils.urlBuilder(urlPath, file)
+        resp.println(s"<a href='$url'>${file}</a></br></br>")
+        if(showImage && Utils.isImageFile(file)){
+          //resp.writeLine(s"<img src='$url' style='max-height: 200px; max-width= 200px;' /></br></br>")
+          val fileAbs = new java.io.File(dirPath, file).getPath()
+          // logger.fine("Image file served = " + fileAbs)
+          val img = ImageUtils.scaleFitZoom(
+            ImageUtils.readFile(fileAbs),
+            400,
+            400,
+            1.0
+          )
+          val b64encode = ImageUtils.toBase64String(img)
+          resp.println(
+            s"<img src='data:image/png;base64,$b64encode' style='max-height: 200px; max-width= 200px;' /></br></br>"
+          )
+        }
+      }
+    }
+  }
+
 } /** --- EoF object ResponseUtils --- **/
 
 

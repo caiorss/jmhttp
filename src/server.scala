@@ -457,13 +457,13 @@ class HttpServer(
   // }
 
 
-  // def addRouteDebug(path: String = "/debug") = {
-  //   val rule = HttpRoute(
-  //     matcher = (req: HttpRequest) => req.path.startsWith(path),
-  //     action  = (req: HttpRequest) => req.sendDebugResponse()
-  //   )
-  //   this.addRoute(rule)
-  // }
+  def addRouteEcho(path: String = "/echo") = {
+    val rule = HttpRoute(
+      matcher = (req: HttpRequest) => req.path.startsWith(path),
+      action  = (req: HttpRequest) => ResponseUtils.echoResponse(req)
+    )
+    this.addRoute(rule)
+  }
 
   def writeResponse(w: HttpResponseWriter, resp: HttpResponse) =  try {
       val httpVersion =  "HTTP/1.0"

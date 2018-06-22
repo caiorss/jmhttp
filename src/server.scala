@@ -476,7 +476,7 @@ class HttpServer(
     this.addRoute(rule)
   }
 
-  def writeResponse(w: HttpResponseWriter, resp: HttpResponse) =  try {
+  private def writeResponse(w: HttpResponseWriter, resp: HttpResponse) =  try {
       val httpVersion =  "HTTP/1.0"
       // val w = new HttpResponseWriter(out)
       w.println(s"${httpVersion} ${resp.statusCode} ${resp.statusMessage}")

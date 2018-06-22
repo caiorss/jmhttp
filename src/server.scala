@@ -49,6 +49,21 @@ case class ResponseBodyStream(stream: java.io.InputStream)        extends Respon
 case class ResponseBodyWriter(writer: HttpResponseWriter => Unit) extends ResponseBody
 
 
+case class HttpResponse(
+  statusCode:    Int,
+  statusMessage: String,
+  mimeType:      String,
+  headers:       Map[String, String],
+  body:          ResponseBody
+) {
+  def addHeader(nameValue: (String, String)) ={
+    val (name, value) = nameValue
+    this.copy(headers = this.headers ++ Map(name -> value))
+  }
+  def addHeader(name: String, value: String) =
+    this.copy(headers = this.headers ++ Map(name -> value))
+}
+
 case class HttpRequest(
   method:    String,
   path:      String,
